@@ -1,0 +1,6 @@
+# Sloaner Nexus · Netlify 配置
+# 纯静态站点（发布目录为仓库根目录，构建命令留空），另含一个 Serverless Function：
+#   /api/* → netlify/functions/api.mjs（留言板评论与点赞，数据存 Netlify Blobs）
+
+[functions]
+directory = "netlify/functions"

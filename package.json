@@ -1,0 +1,10 @@
+{
+  "name": "sloaner-nexus",
+  "version": "3.0.0",
+  "private": true,
+  "description": "Sloaner Nexus 个人展示门户 · 纯静态站点 + Netlify Functions 留言板",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^11.0.0"
+  }
+}

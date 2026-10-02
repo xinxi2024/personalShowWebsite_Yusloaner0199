@@ -1,0 +1,11 @@
+# 原始证书扫描件 / 申报表（含个人敏感信息，不公开发布；网页使用 assets/honors/ 下的优化图）
+奖状/
+
+# 系统与编辑器
+.DS_Store
+*.swp
+.vscode/
+.idea/
+
+# Node（仅 Netlify 构建时安装函数依赖）
+node_modules/
