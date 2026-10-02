@@ -305,11 +305,17 @@ const counterIO = new IntersectionObserver(entries => {
 }, { threshold: 0.6 });
 document.querySelectorAll("[data-count]").forEach(el => counterIO.observe(el));
 
-/* ---------- 移动端菜单 ---------- */
-document.getElementById("navToggle").addEventListener("click", () =>
-  document.getElementById("navLinks").classList.toggle("is-open"));
-document.querySelectorAll("#navLinks a").forEach(a =>
-  a.addEventListener("click", () => document.getElementById("navLinks").classList.remove("is-open")));
+/* ---------- 移动端菜单（含 Esc 关闭 + aria 状态） ---------- */
+const navToggle = document.getElementById("navToggle");
+const navLinks = document.getElementById("navLinks");
+function setMenu(open) {
+  navLinks.classList.toggle("is-open", open);
+  navToggle.setAttribute("aria-expanded", open);
+  navToggle.textContent = open ? "✕" : "☰";
+}
+navToggle.addEventListener("click", () => setMenu(!navLinks.classList.contains("is-open")));
+navLinks.querySelectorAll("a").forEach(a => a.addEventListener("click", () => setMenu(false)));
+addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
 
 /* ---------- 彩蛋：切走标签页时替换标题 ---------- */
 const originalTitle = document.title;

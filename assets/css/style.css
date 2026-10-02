@@ -392,6 +392,24 @@ body.has-cursor .cursor-glow { opacity: 1; }
   transition: border-color .2s, transform .2s;
 }
 .skills__group span:hover { border-color: var(--purple); transform: translateY(-2px); }
+.skills__group--wide { grid-column: 1 / -1; }
+.skills__group small { color: var(--muted); font-weight: 400; font-size: .8rem; }
+
+/* 技能进度条 */
+.skill-bars { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px 28px; }
+.skill-bar span { display: flex; justify-content: space-between; font-size: .9rem; margin-bottom: 5px; }
+.skill-bar em { font-style: normal; color: var(--muted); font-size: .78rem; }
+.skill-bar__track {
+  height: 7px; border-radius: 4px; overflow: hidden;
+  background: rgba(255, 255, 255, .06); border: 1px solid var(--card-border);
+}
+.skill-bar__track i {
+  display: block; height: 100%; width: 0; border-radius: 4px;
+  background: var(--grad);
+  box-shadow: 0 0 10px rgba(34, 211, 238, .5);
+  transition: width 1.1s cubic-bezier(.65, 0, .35, 1);
+}
+.section.is-visible .skill-bar__track i { width: var(--w); }
 
 /* ---------- 页脚 ---------- */
 .footer {
