@@ -1,4 +1,4 @@
-/* ============ Sloaner Nexus · 交互与数据 ============ */
+/* ============ Sloaner Nexus · 交互与数据 v2 ============ */
 
 /* ---------- 项目数据（与 md 文档同步） ---------- */
 const CATS = {
@@ -93,17 +93,24 @@ const PROJECTS = [
   { cat: "app", name: "学习复习计划管理", desc: "复习规划应用", url: "https://ysloaner-reviewplan.netlify.app/" },
 ];
 
-/* ---------- 渲染项目卡片 + 分类筛选 ---------- */
+/* ---------- 渲染项目卡片 + 分类筛选 + 搜索 ---------- */
 const grid = document.getElementById("projectsGrid");
+const emptyTip = document.getElementById("projectsEmpty");
+const searchInput = document.getElementById("searchInput");
+const searchCount = document.getElementById("searchCount");
 const CAT_ORDER = { hub: 0, tool: 1, game: 2, app: 3 };
 const CAT_ICON = { hub: "🛰️", tool: "🧰", game: "🎮", app: "📊" };
+let currentCat = "all";
 
-function renderProjects(cat = "all") {
+function renderProjects() {
+  const kw = searchInput.value.trim().toLowerCase();
   const list = PROJECTS
-    .filter(p => cat === "all" || p.cat === cat)
+    .filter(p => (currentCat === "all" || p.cat === currentCat))
+    .filter(p => !kw || p.name.toLowerCase().includes(kw) || (p.desc || "").toLowerCase().includes(kw))
     .sort((a, b) => CAT_ORDER[a.cat] - CAT_ORDER[b.cat]);
+
   grid.innerHTML = list.map((p, i) => `
-    <a class="project ${p.cat === "hub" ? "project--hub" : ""}"
+    <a class="project spot ${p.cat === "hub" ? "project--hub" : ""}"
        href="${p.url}" target="_blank" rel="noopener"
        style="animation-delay:${Math.min(i * 25, 400)}ms">
       <span class="project__arrow">↗</span>
@@ -111,6 +118,9 @@ function renderProjects(cat = "all") {
       <div class="project__name">${p.name}</div>
       ${p.desc ? `<div class="project__desc">${p.desc}</div>` : ""}
     </a>`).join("");
+
+  emptyTip.hidden = list.length > 0;
+  searchCount.textContent = kw || currentCat !== "all" ? `${list.length} 个` : "";
 }
 renderProjects();
 
@@ -119,18 +129,53 @@ document.getElementById("filter").addEventListener("click", e => {
   if (!btn) return;
   document.querySelectorAll(".filter__btn").forEach(b => b.classList.remove("is-active"));
   btn.classList.add("is-active");
-  renderProjects(btn.dataset.cat);
+  currentCat = btn.dataset.cat;
+  renderProjects();
+});
+searchInput.addEventListener("input", renderProjects);
+
+/* ---------- 聚光灯卡片：鼠标位置追踪 ---------- */
+document.addEventListener("mousemove", e => {
+  const card = e.target.closest(".spot");
+  if (!card) return;
+  const r = card.getBoundingClientRect();
+  card.style.setProperty("--mx", `${e.clientX - r.left}px`);
+  card.style.setProperty("--my", `${e.clientY - r.top}px`);
 });
 
-/* ---------- 星空 Canvas ---------- */
+/* ---------- 打字机 ---------- */
+const ROLES = [
+  "物联网工程在读 · 独立开发者",
+  "中等职业教育国家奖学金得主",
+  "世界职业院校技能大赛 · 团体金奖",
+  "上海三校生高考总分第一",
+  "73+ 个线上项目的创造者",
+];
+const typedEl = document.getElementById("typed");
+(function typeLoop(roleIdx = 0, charIdx = 0, deleting = false) {
+  const text = ROLES[roleIdx];
+  typedEl.textContent = text.slice(0, charIdx);
+  let delay = deleting ? 34 : 82;
+  if (!deleting && charIdx === text.length) {
+    delay = 1800; deleting = true;
+  } else if (deleting && charIdx === 0) {
+    deleting = false; roleIdx = (roleIdx + 1) % ROLES.length; delay = 420;
+  } else {
+    charIdx += deleting ? -1 : 1;
+  }
+  setTimeout(() => typeLoop(roleIdx, charIdx, deleting), delay);
+})();
+
+/* ---------- 星空 Canvas：星星 + 流星 + 鼠标视差 ---------- */
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
-let stars = [];
+let stars = [], meteors = [];
+let mouseX = 0.5, mouseY = 0.5;
 
 function resize() {
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
-  const n = Math.min(220, Math.floor(canvas.width * canvas.height / 7000));
+  const n = Math.min(240, Math.floor(canvas.width * canvas.height / 6500));
   stars = Array.from({ length: n }, () => ({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height,
@@ -138,31 +183,102 @@ function resize() {
     s: Math.random() * 0.35 + 0.08,
     o: Math.random() * 0.6 + 0.25,
     p: Math.random() * Math.PI * 2,
+    depth: Math.random() * 0.8 + 0.2, // 视差层深
   }));
+}
+
+function spawnMeteor() {
+  const fromLeft = Math.random() < 0.5;
+  meteors.push({
+    x: Math.random() * canvas.width * 0.7 + canvas.width * 0.15,
+    y: -20,
+    vx: (fromLeft ? 1 : -1) * (Math.random() * 3 + 4),
+    vy: Math.random() * 2 + 3,
+    life: 1,
+  });
 }
 
 function tick(t) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 星星（含鼠标视差偏移）
+  const px = (mouseX - 0.5) * 18, py = (mouseY - 0.5) * 12;
   for (const st of stars) {
     st.y += st.s;
     if (st.y > canvas.height) { st.y = -2; st.x = Math.random() * canvas.width; }
     const tw = st.o * (0.6 + 0.4 * Math.sin(t / 900 + st.p));
     ctx.beginPath();
-    ctx.arc(st.x, st.y, st.r, 0, Math.PI * 2);
+    ctx.arc(st.x + px * st.depth, st.y + py * st.depth, st.r, 0, Math.PI * 2);
     ctx.fillStyle = `rgba(190, 225, 255, ${tw})`;
     ctx.fill();
   }
+
+  // 流星
+  if (Math.random() < 0.006 && meteors.length < 2) spawnMeteor();
+  meteors = meteors.filter(m => m.life > 0);
+  for (const m of meteors) {
+    m.x += m.vx; m.y += m.vy; m.life -= 0.014;
+    const tail = 22;
+    const g = ctx.createLinearGradient(m.x, m.y, m.x - m.vx * tail, m.y - m.vy * tail);
+    g.addColorStop(0, `rgba(200, 235, 255, ${0.9 * m.life})`);
+    g.addColorStop(1, "rgba(200, 235, 255, 0)");
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.moveTo(m.x, m.y);
+    ctx.lineTo(m.x - m.vx * tail, m.y - m.vy * tail);
+    ctx.stroke();
+  }
+
   requestAnimationFrame(tick);
 }
 resize();
 requestAnimationFrame(tick);
 addEventListener("resize", resize);
+addEventListener("mousemove", e => {
+  mouseX = e.clientX / innerWidth;
+  mouseY = e.clientY / innerHeight;
+});
+
+/* ---------- 光标辉光 ---------- */
+const glow = document.getElementById("cursorGlow");
+if (matchMedia("(hover: hover)").matches) {
+  let gx = 0, gy = 0, tx = 0, ty = 0;
+  addEventListener("mousemove", e => { tx = e.clientX; ty = e.clientY; document.body.classList.add("has-cursor"); });
+  (function follow() {
+    gx += (tx - gx) * 0.08; gy += (ty - gy) * 0.08;
+    glow.style.left = gx + "px"; glow.style.top = gy + "px";
+    requestAnimationFrame(follow);
+  })();
+}
+
+/* ---------- 滚动：进度条 / 导航态 / 回顶按钮 ---------- */
+const nav = document.getElementById("nav");
+const progress = document.getElementById("progress");
+const toTop = document.getElementById("toTop");
+addEventListener("scroll", () => {
+  const h = document.documentElement;
+  progress.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + "%";
+  nav.classList.toggle("is-scrolled", scrollY > 30);
+  toTop.classList.toggle("is-show", scrollY > 600);
+}, { passive: true });
+toTop.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
 
 /* ---------- 滚动显现动画 ---------- */
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => e.isIntersecting && e.target.classList.add("is-visible"));
 }, { threshold: 0.12 });
 document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+/* ---------- 导航高亮当前 section ---------- */
+const navIO = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    document.querySelectorAll("[data-nav]").forEach(a =>
+      a.classList.toggle("is-active", a.dataset.nav === e.target.id));
+  });
+}, { rootMargin: "-40% 0px -55% 0px" });
+document.querySelectorAll(".section").forEach(s => navIO.observe(s));
 
 /* ---------- 数字滚动 ---------- */
 const counterIO = new IntersectionObserver(entries => {
@@ -180,9 +296,7 @@ const counterIO = new IntersectionObserver(entries => {
 }, { threshold: 0.6 });
 document.querySelectorAll("[data-count]").forEach(el => counterIO.observe(el));
 
-/* ---------- 导航：滚动态 & 移动端菜单 ---------- */
-const nav = document.getElementById("nav");
-addEventListener("scroll", () => nav.classList.toggle("is-scrolled", scrollY > 30));
+/* ---------- 移动端菜单 ---------- */
 document.getElementById("navToggle").addEventListener("click", () =>
   document.getElementById("navLinks").classList.toggle("is-open"));
 document.querySelectorAll("#navLinks a").forEach(a =>

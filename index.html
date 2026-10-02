@@ -5,21 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sloaner Nexus · 俞顺利的数字枢纽</title>
   <meta name="description" content="俞顺利（YuSloane）的个人展示网站：物联网工程在读，独立开发者。聚合 Sloaner 百宝箱、YuSloane 游戏帝国与数据应用项目。" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%9B%B0%EF%B8%8F%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body>
+  <!-- 滚动进度条 & 光标辉光 -->
+  <div class="progress" id="progress"></div>
+  <div class="cursor-glow" id="cursorGlow"></div>
+
   <!-- ===== 导航 ===== -->
   <nav class="nav" id="nav">
     <a class="nav__logo" href="#top">Sloaner<span>Nexus</span></a>
     <button class="nav__toggle" id="navToggle" aria-label="菜单">☰</button>
     <ul class="nav__links" id="navLinks">
-      <li><a href="#about">关于我</a></li>
-      <li><a href="#honors">荣誉</a></li>
-      <li><a href="#projects">项目宇宙</a></li>
-      <li><a href="#skills">技能栈</a></li>
-      <li><a href="#goals">目标</a></li>
+      <li><a href="#about" data-nav="about">关于我</a></li>
+      <li><a href="#honors" data-nav="honors">荣誉</a></li>
+      <li><a href="#projects" data-nav="projects">项目宇宙</a></li>
+      <li><a href="#skills" data-nav="skills">技能栈</a></li>
+      <li><a href="#goals" data-nav="goals">目标</a></li>
       <li><a class="nav__cta" href="https://github.com/xinxi2024" target="_blank" rel="noopener">GitHub</a></li>
     </ul>
   </nav>
@@ -27,19 +32,24 @@
   <!-- ===== Hero ===== -->
   <header class="hero" id="top">
     <canvas id="stars"></canvas>
+    <div class="aurora aurora--1"></div>
+    <div class="aurora aurora--2"></div>
     <div class="hero__inner">
-      <img class="hero__avatar"
-           src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=minimalist%20digital%20avatar%20portrait%20of%20a%20young%20male%20developer%2C%20glowing%20cyan%20and%20purple%20neon%20rim%20light%2C%20dark%20navy%20background%2C%20futuristic%20tech%20style%2C%20clean%20vector%20illustration%2C%20centered&image_size=square"
-           alt="YuSloane 头像" />
-      <p class="hero__hello">你好，我是</p>
-      <h1 class="hero__name">俞顺利 <span class="hero__en">YuSloane</span></h1>
-      <p class="hero__tagline">物联网工程在读 · 独立开发者 · 用代码解决实际问题</p>
+      <div class="hero__avatar-ring">
+        <img class="hero__avatar" src="tx.jpg" alt="YuSloane 头像" />
+      </div>
+      <p class="hero__hello">HELLO, I'M</p>
+      <h1 class="hero__name">俞顺利<span class="hero__en">YuSloane</span></h1>
+      <p class="hero__typed"><span id="typed"></span><span class="caret"></span></p>
       <div class="hero__tags">
         <span>务实</span><span>独立开发者</span><span>持续迭代</span>
       </div>
       <div class="hero__btns">
         <a class="btn btn--primary" href="#projects">进入项目宇宙</a>
-        <a class="btn btn--ghost" href="https://github.com/xinxi2024" target="_blank" rel="noopener">GitHub @xinxi2024</a>
+        <a class="btn btn--ghost" href="https://github.com/xinxi2024" target="_blank" rel="noopener">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="vertical-align:-2px;margin-right:6px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+          @xinxi2024
+        </a>
       </div>
       <div class="hero__stats">
         <div><b data-count="31">0</b><i>效率工具</i></div>
@@ -48,23 +58,21 @@
         <div><b data-count="5">0</b><i>重量级奖项</i></div>
       </div>
     </div>
-    <a class="hero__scroll" href="#about">↓</a>
+    <a class="hero__scroll" href="#about"><span></span></a>
   </header>
 
   <main>
     <!-- ===== 关于我 ===== -->
     <section class="section reveal" id="about">
       <h2 class="section__title"><em>01</em>关于我</h2>
-      <div class="about">
-        <blockquote class="about__quote">
-          物联网工程在读，热爱用代码解决实际问题，独立开发者。倾向于用工程化思维拆解复杂问题，习惯把杂乱的信息整理成可执行的清单。对技术创造有持续的驱动力，相信「做出东西」比「谈论想法」更有价值。
-        </blockquote>
-        <div class="about__grid">
-          <div class="about__card"><b>🎓 院校</b><p>上海商学院 · 物联网工程（2026级）<br/>班长兼副团支书</p></div>
-          <div class="about__card"><b>🚀 路径</b><p>上海信息技术学校 软件与信息服务<br/>→ 三校生高考总分第一（257/300）考入</p></div>
-          <div class="about__card"><b>🧭 方向</b><p>数据分析 · 嵌入式开发基础 · 物联网应用</p></div>
-          <div class="about__card"><b>🧠 特质</b><p>INTJ / ENTJ 倾向：目标导向、高自主性、结构化输出</p></div>
-        </div>
+      <blockquote class="about__quote">
+        物联网工程在读，热爱用代码解决实际问题，独立开发者。倾向于用工程化思维拆解复杂问题，习惯把杂乱的信息整理成可执行的清单。对技术创造有持续的驱动力，相信「做出东西」比「谈论想法」更有价值。
+      </blockquote>
+      <div class="about__grid">
+        <div class="about__card spot"><b>🎓 院校</b><p>上海商学院 · 物联网工程（2026级）<br/>班长兼副团支书</p></div>
+        <div class="about__card spot"><b>🚀 路径</b><p>上海信息技术学校 软件与信息服务<br/>→ 三校生高考总分第一（257/300）考入</p></div>
+        <div class="about__card spot"><b>🧭 方向</b><p>数据分析 · 嵌入式开发基础 · 物联网应用</p></div>
+        <div class="about__card spot"><b>🧠 特质</b><p>INTJ / ENTJ 倾向：目标导向、高自主性、结构化输出</p></div>
       </div>
     </section>
 
@@ -74,23 +82,23 @@
       <div class="timeline">
         <div class="timeline__item">
           <span class="timeline__year">2025</span>
-          <div><b>中等职业教育国家奖学金</b><p>2024-2025 学年度获奖，作为上海市两名入选的中职学生代表之一，事迹荣登《人民日报》</p></div>
+          <div class="spot timeline__body"><b>中等职业教育国家奖学金</b><p>2024-2025 学年度获奖，作为上海市两名入选的中职学生代表之一，事迹荣登《人民日报》</p></div>
         </div>
         <div class="timeline__item">
           <span class="timeline__year">2025</span>
-          <div><b>全国中职信息技术应用能力大赛 · 团体一等奖</b><p>决赛 大数据应用与 AI 服务赛道</p></div>
+          <div class="spot timeline__body"><b>全国中职信息技术应用能力大赛 · 团体一等奖</b><p>决赛 大数据应用与 AI 服务赛道</p></div>
         </div>
         <div class="timeline__item">
           <span class="timeline__year">2026</span>
-          <div><b>上海三校生高考 · 总分第一 &amp; 数学单科第一</b><p>总分 257/300（语文 77 · 数学 93 · 英语 87），考入上海商学院物联网工程专业</p></div>
+          <div class="spot timeline__body"><b>上海三校生高考 · 总分第一 &amp; 数学单科第一</b><p>总分 257/300（语文 77 · 数学 93 · 英语 87），考入上海商学院物联网工程专业</p></div>
         </div>
         <div class="timeline__item">
           <span class="timeline__year">2024</span>
-          <div><b>世界职业院校技能大赛 · 团体金奖</b><p>2024 年总决赛争夺赛 电子与信息赛道二</p></div>
+          <div class="spot timeline__body"><b>世界职业院校技能大赛 · 团体金奖</b><p>2024 年总决赛争夺赛 电子与信息赛道二</p></div>
         </div>
         <div class="timeline__item">
           <span class="timeline__year">在校</span>
-          <div><b>上海市「星光计划」技能大赛一等奖 · 多次校级特等奖学金</b><p>持续保持专业前列</p></div>
+          <div class="spot timeline__body"><b>上海市「星光计划」技能大赛一等奖 · 多次校级特等奖学金</b><p>持续保持专业前列</p></div>
         </div>
       </div>
     </section>
@@ -99,24 +107,31 @@
     <section class="section reveal" id="projects">
       <h2 class="section__title"><em>03</em>项目宇宙</h2>
       <p class="section__desc">73+ 个独立开发并部署的线上作品，按星系分类。点击任意卡片即可访问。</p>
-      <div class="filter" id="filter">
-        <button class="filter__btn is-active" data-cat="all">全部</button>
-        <button class="filter__btn" data-cat="tool">🧰 效率工具 · 31</button>
-        <button class="filter__btn" data-cat="game">🎮 经典游戏 · 32</button>
-        <button class="filter__btn" data-cat="app">📊 数据应用 · 9</button>
-        <button class="filter__btn" data-cat="hub">🛰️ 星际集成</button>
+      <div class="projects__bar">
+        <div class="filter" id="filter">
+          <button class="filter__btn is-active" data-cat="all">全部</button>
+          <button class="filter__btn" data-cat="tool">🧰 效率工具</button>
+          <button class="filter__btn" data-cat="game">🎮 经典游戏</button>
+          <button class="filter__btn" data-cat="app">📊 数据应用</button>
+          <button class="filter__btn" data-cat="hub">🛰️ 星际集成</button>
+        </div>
+        <div class="search">
+          <input type="search" id="searchInput" placeholder="🔍 搜索项目，如：扫雷 / 二维码" autocomplete="off" />
+          <span class="search__count" id="searchCount"></span>
+        </div>
       </div>
       <div class="projects" id="projectsGrid"></div>
+      <p class="projects__empty" id="projectsEmpty" hidden>没有匹配的项目，换个关键词试试 🌌</p>
     </section>
 
     <!-- ===== 技能栈 ===== -->
     <section class="section reveal" id="skills">
       <h2 class="section__title"><em>04</em>技能栈</h2>
       <div class="skills">
-        <div class="skills__group"><b>编程语言</b><div><span>Python · 熟练</span><span>C · 入门</span><span>HTML / CSS / JS · 基础前端</span></div></div>
-        <div class="skills__group"><b>开发工具</b><div><span>Git</span><span>Netlify</span><span>Render</span><span>VS Code</span></div></div>
-        <div class="skills__group"><b>专业方向</b><div><span>数据分析</span><span>嵌入式开发基础</span><span>物联网应用</span></div></div>
-        <div class="skills__group"><b>软实力</b><div><span>技术写作</span><span>项目复盘</span><span>信息整合</span><span>结构化文档</span></div></div>
+        <div class="skills__group spot"><b>编程语言</b><div><span>Python · 熟练</span><span>C · 入门</span><span>HTML / CSS / JS · 基础前端</span></div></div>
+        <div class="skills__group spot"><b>开发工具</b><div><span>Git</span><span>Netlify</span><span>Render</span><span>VS Code</span></div></div>
+        <div class="skills__group spot"><b>专业方向</b><div><span>数据分析</span><span>嵌入式开发基础</span><span>物联网应用</span></div></div>
+        <div class="skills__group spot"><b>软实力</b><div><span>技术写作</span><span>项目复盘</span><span>信息整合</span><span>结构化文档</span></div></div>
       </div>
     </section>
 
@@ -124,11 +139,11 @@
     <section class="section reveal" id="goals">
       <h2 class="section__title"><em>05</em>当前目标 · 2026-2027</h2>
       <div class="goals">
-        <div class="goals__card"><b>📖 学业</b><p>稳住 GPA，攻克 C 语言与嵌入式基础</p></div>
-        <div class="goals__card"><b>🗣️ 英语</b><p>雅思 6.5-7.0，四级顺带通过</p></div>
-        <div class="goals__card"><b>🏆 竞赛</b><p>大英赛（大一）· 蓝桥杯软件赛道（大二）· 大数据/物联网竞赛</p></div>
-        <div class="goals__card"><b>🛠️ 项目</b><p>推进 TinyClimate 物联网项目，完善 Sloaner 系列项目库</p></div>
-        <div class="goals__card"><b>🔭 探索</b><p>关注 Swift Student Challenge，探索 iOS 开发方向</p></div>
+        <div class="goals__card spot"><b>📖 学业</b><p>稳住 GPA，攻克 C 语言与嵌入式基础</p></div>
+        <div class="goals__card spot"><b>🗣️ 英语</b><p>雅思 6.5-7.0，四级顺带通过</p></div>
+        <div class="goals__card spot"><b>🏆 竞赛</b><p>大英赛（大一）· 蓝桥杯软件赛道（大二）· 大数据/物联网竞赛</p></div>
+        <div class="goals__card spot"><b>🛠️ 项目</b><p>推进 TinyClimate 物联网项目，完善 Sloaner 系列项目库</p></div>
+        <div class="goals__card spot"><b>🔭 探索</b><p>关注 Swift Student Challenge，探索 iOS 开发方向</p></div>
       </div>
     </section>
   </main>
@@ -143,6 +158,8 @@
     </p>
     <p class="footer__motto">做出东西，比谈论想法更有价值。</p>
   </footer>
+
+  <button class="to-top" id="toTop" aria-label="回到顶部">↑</button>
 
   <script src="assets/js/main.js"></script>
 </body>
