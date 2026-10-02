@@ -5,9 +5,11 @@
  *   GET    /api/state                 获取点赞数 + 评论列表（含当前访客状态）
  *   POST   /api/like                  点赞 / 取消点赞（站点 or 某条评论）
  *   POST   /api/comment               发表评论（限流 + 长度校验）
- *   DELETE /api/comment?id=xxx        删除自己（同浏览器/IP）发表的评论
+ *   DELETE /api/comment?id=xxx        删除自己（同浏览器 vid）发表的评论
  *
  * 数据持久化在 Netlify Blobs（单 JSON blob，强一致读写）。
+ * 访客身份 = 浏览器 localStorage 持久化随机 vid 的哈希（跨网络/IP 漂移稳定）；
+ * IP 仅用于点赞接口的限流。
  * =================================================================== */
 import { createHash, randomUUID } from "node:crypto";
 import { getStore } from "@netlify/blobs";
@@ -16,22 +18,33 @@ export const config = {
   path: "/api/*",
 };
 
-const BLOB_KEY = "guestbook-v1";
+// v2：访客身份以浏览器 localStorage 中持久化的随机 vid 为准
+// （IP 会因 IPv4/IPv6 切换、移动网络漫游而漂移，不能作主身份）；
+// IP 仅用于服务端限流。换 blob key 让旧的不稳定指纹数据自然作废。
+const BLOB_KEY = "guestbook-v2";
 const MAX_COMMENTS = 400;
 const NAME_MAX = 24;
 const TEXT_MAX = 500;
 
 /* ---------- 工具 ---------- */
 
-function visitorHash(request, context, vid = "") {
-  const ip =
+function clientIp(request, context) {
+  return (
     request.headers.get("x-nf-client-connection-ip") ||
     request.headers.get("x-real-ip") ||
     request.headers.get("cf-connecting-ip") ||
     context?.ip ||
-    "0.0.0.0";
+    "0.0.0.0"
+  );
+}
+
+/* 访客稳定身份：vid 哈希；未带 vid 的异常请求退化为 IP+UA 哈希 */
+function visitorHash(request, context, vid = "") {
+  const v = String(vid || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64);
+  if (v) return "v2:" + createHash("sha256").update(`nexus-vid::${v}`).digest("hex");
+  const ip = clientIp(request, context);
   const ua = request.headers.get("user-agent") || "";
-  return createHash("sha256").update(`nexus::${ip}::${ua}::${vid}`).digest("hex");
+  return "v2:" + createHash("sha256").update(`nexus-anon::${ip}::${ua}`).digest("hex");
 }
 
 function json(body, status = 200) {
@@ -85,15 +98,24 @@ function publicComment(c, hash) {
 
 /* ---------- 简易内存限流（同一温实例内生效） ---------- */
 const buckets = new Map();
-function rateLimit(hash) {
+/* 通用滑动窗口：key 在 windowMs 内最多 max 次；可选最小间隔 minGapMs */
+function hitLimit(key, max, windowMs, minGapMs = 0) {
   const now = Date.now();
-  const b = buckets.get(hash) || { last: 0, times: [] };
-  b.times = b.times.filter((t) => now - t < 3600_000);
-  if (now - b.last < 20_000 || b.times.length >= 5) return false;
+  const b = buckets.get(key) || { last: 0, times: [] };
+  b.times = b.times.filter((t) => now - t < windowMs);
+  if ((minGapMs && now - b.last < minGapMs) || b.times.length >= max) return true;
   b.last = now;
   b.times.push(now);
-  buckets.set(hash, b);
-  return true;
+  buckets.set(key, b);
+  return false;
+}
+/* 发评论：稳定指纹维度，20 秒间隔 + 每小时 5 条 */
+function commentLimited(hash) {
+  return hitLimit("c:" + hash, 5, 3600_000, 20_000);
+}
+/* 点赞：IP 维度防刷（vid 可被脚本批量生成），每分钟 30 次 */
+function likeLimited(ip) {
+  return hitLimit("l:" + ip, 30, 60_000);
 }
 
 /* ---------- 主处理 ---------- */
@@ -131,6 +153,9 @@ export default async (request, context) => {
 
     /* ============ POST /api/like ============ */
     if (route === "like" && request.method === "POST") {
+      if (likeLimited(clientIp(request, context))) {
+        return json({ ok: false, error: "操作太快啦，歇口气再点" }, 429);
+      }
       const body = await request.json().catch(() => ({}));
       const target = body.target === "comment" ? "comment" : "site";
       const data = await loadData(store);
@@ -155,7 +180,7 @@ export default async (request, context) => {
 
     /* ============ POST /api/comment ============ */
     if (route === "comment" && request.method === "POST") {
-      if (!rateLimit(hash)) {
+      if (commentLimited(hash)) {
         return json({ ok: false, error: "操作太频繁啦，喝口水稍后再试（20 秒 / 条）" }, 429);
       }
       const body = await request.json().catch(() => ({}));

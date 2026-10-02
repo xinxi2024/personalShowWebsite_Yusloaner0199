@@ -64,7 +64,7 @@
 
 - 运行时：Netlify Functions v2（Web Request / Response，ESM `.mjs`，`config.path` 声明路由）
 - 存储：`@netlify/blobs` 的 `getStore({ name: "nexus-guestbook", consistency: "strong" })`，单 JSON blob（`siteLikes` + `comments`，最多保留最新 400 条）
-- 访客身份：`sha256(IP + UA + 本地随机 vid)`，服务端不保存任何原始个人信息
+- 访客身份：浏览器 localStorage 持久化随机 `vid` 的哈希（IP 会因网络切换漂移，不做主身份），服务端不保存任何原始个人信息；IP 仅用于点赞限流（30 次/分钟）
 
 ## 🚀 部署（Netlify）
 
