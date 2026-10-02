@@ -21,7 +21,7 @@ export const config = {
 // v2：访客身份以浏览器 localStorage 中持久化的随机 vid 为准
 // （IP 会因 IPv4/IPv6 切换、移动网络漫游而漂移，不能作主身份）；
 // IP 仅用于服务端限流。换 blob key 让旧的不稳定指纹数据自然作废。
-const BLOB_KEY = "guestbook-v2";
+const BLOB_KEY = "guestbook-v3";
 const MAX_COMMENTS = 400;
 const NAME_MAX = 24;
 const TEXT_MAX = 500;
@@ -125,7 +125,11 @@ export default async (request, context) => {
 
   const url = new URL(request.url);
   const route = url.pathname.replace(/^\/api\/?/, "").split("/")[0] || "state";
-  const vid = url.searchParams.get("vid") || "";
+  // GET/DELETE 的 vid 在 query；POST 的 vid 在 JSON body —— 两处都要接住，
+  // 否则 POST 会退化为不稳定的匿名（IP+UA）指纹，与 GET 对不上。
+  const queryVid = url.searchParams.get("vid") || "";
+  const body = request.method === "POST" ? await request.json().catch(() => ({})) : {};
+  const vid = cleanText(body.vid || queryVid, 64);
 
   let store;
   try {
@@ -156,7 +160,6 @@ export default async (request, context) => {
       if (likeLimited(clientIp(request, context))) {
         return json({ ok: false, error: "操作太快啦，歇口气再点" }, 429);
       }
-      const body = await request.json().catch(() => ({}));
       const target = body.target === "comment" ? "comment" : "site";
       const data = await loadData(store);
 
@@ -183,10 +186,9 @@ export default async (request, context) => {
       if (commentLimited(hash)) {
         return json({ ok: false, error: "操作太频繁啦，喝口水稍后再试（20 秒 / 条）" }, 429);
       }
-      const body = await request.json().catch(() => ({}));
       const name = cleanText(body.name, NAME_MAX);
       const text = cleanText(body.text, TEXT_MAX);
-      const visitorId = cleanText(body.vid, 64);
+      const visitorId = vid;
 
       if (name.length < 1) return json({ ok: false, error: "请留下你的昵称" }, 400);
       if (text.length < 1) return json({ ok: false, error: "留言内容不能为空" }, 400);
