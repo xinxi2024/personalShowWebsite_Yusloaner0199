@@ -146,10 +146,11 @@ document.addEventListener("mousemove", e => {
 /* ---------- 打字机 ---------- */
 const ROLES = [
   "物联网工程在读 · 独立开发者",
-  "中等职业教育国家奖学金得主",
+  "两获中等职业教育国家奖学金",
+  "事迹荣登《人民日报》2026.5.4 第 07 版",
   "世界职业院校技能大赛 · 团体金奖",
   "上海三校生高考总分第一",
-  "73+ 个线上项目的创造者",
+  "GitHub 103 仓库 · 73+ 个线上项目的创造者",
 ];
 const typedEl = document.getElementById("typed");
 if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
