@@ -393,20 +393,6 @@ body.has-cursor .cursor-glow { opacity: 1; }
 }
 .skills__group span:hover { border-color: var(--purple); transform: translateY(-2px); }
 
-/* ---------- 目标 ---------- */
-.goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 16px; }
-.goals__card {
-  background: var(--card); border: 1px solid var(--card-border);
-  border-radius: var(--radius); padding: 20px;
-  transition: transform .25s, border-color .25s, box-shadow .25s;
-}
-.goals__card:hover {
-  transform: translateY(-4px); border-color: rgba(167, 139, 250, .45);
-  box-shadow: 0 14px 36px rgba(167, 139, 250, .12);
-}
-.goals__card b { display: block; margin-bottom: 8px; }
-.goals__card p { color: var(--muted); font-size: .9rem; }
-
 /* ---------- 页脚 ---------- */
 .footer {
   text-align: center; padding: 60px 20px 40px; margin-top: 80px;

@@ -169,11 +169,12 @@ if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
   setTimeout(() => typeLoop(roleIdx, charIdx, deleting), delay);
 })();
 
-/* ---------- 星空 Canvas：星星 + 流星 + 鼠标视差 ---------- */
+/* ---------- 星空 Canvas：星星 + 流星 + 鼠标视差（离屏暂停） ---------- */
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
 let stars = [], meteors = [];
 let mouseX = 0.5, mouseY = 0.5;
+let heroVisible = true, rafId = null;
 
 function resize() {
   canvas.width = canvas.offsetWidth;
@@ -233,11 +234,16 @@ function tick(t) {
     ctx.stroke();
   }
 
-  requestAnimationFrame(tick);
+  rafId = heroVisible ? requestAnimationFrame(tick) : null;
 }
 resize();
-requestAnimationFrame(tick);
+rafId = requestAnimationFrame(tick);
 addEventListener("resize", resize);
+// Hero 滚出视口时暂停星空渲染，省电省性能
+new IntersectionObserver(([e]) => {
+  heroVisible = e.isIntersecting;
+  if (heroVisible && rafId === null) rafId = requestAnimationFrame(tick);
+}).observe(document.getElementById("top"));
 addEventListener("mousemove", e => {
   mouseX = e.clientX / innerWidth;
   mouseY = e.clientY / innerHeight;
