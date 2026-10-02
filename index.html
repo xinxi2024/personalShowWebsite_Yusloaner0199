@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sloaner Nexus · 俞顺利的数字枢纽</title>
+  <meta name="description" content="俞顺利（YuSloane）的个人展示网站：物联网工程在读，独立开发者。聚合 Sloaner 百宝箱、YuSloane 游戏帝国与数据应用项目。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <!-- ===== 导航 ===== -->
+  <nav class="nav" id="nav">
+    <a class="nav__logo" href="#top">Sloaner<span>Nexus</span></a>
+    <button class="nav__toggle" id="navToggle" aria-label="菜单">☰</button>
+    <ul class="nav__links" id="navLinks">
+      <li><a href="#about">关于我</a></li>
+      <li><a href="#honors">荣誉</a></li>
+      <li><a href="#projects">项目宇宙</a></li>
+      <li><a href="#skills">技能栈</a></li>
+      <li><a href="#goals">目标</a></li>
+      <li><a class="nav__cta" href="https://github.com/xinxi2024" target="_blank" rel="noopener">GitHub</a></li>
+    </ul>
+  </nav>
+
+  <!-- ===== Hero ===== -->
+  <header class="hero" id="top">
+    <canvas id="stars"></canvas>
+    <div class="hero__inner">
+      <img class="hero__avatar"
+           src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=minimalist%20digital%20avatar%20portrait%20of%20a%20young%20male%20developer%2C%20glowing%20cyan%20and%20purple%20neon%20rim%20light%2C%20dark%20navy%20background%2C%20futuristic%20tech%20style%2C%20clean%20vector%20illustration%2C%20centered&image_size=square"
+           alt="YuSloane 头像" />
+      <p class="hero__hello">你好，我是</p>
+      <h1 class="hero__name">俞顺利 <span class="hero__en">YuSloane</span></h1>
+      <p class="hero__tagline">物联网工程在读 · 独立开发者 · 用代码解决实际问题</p>
+      <div class="hero__tags">
+        <span>务实</span><span>独立开发者</span><span>持续迭代</span>
+      </div>
+      <div class="hero__btns">
+        <a class="btn btn--primary" href="#projects">进入项目宇宙</a>
+        <a class="btn btn--ghost" href="https://github.com/xinxi2024" target="_blank" rel="noopener">GitHub @xinxi2024</a>
+      </div>
+      <div class="hero__stats">
+        <div><b data-count="31">0</b><i>效率工具</i></div>
+        <div><b data-count="32">0</b><i>经典游戏</i></div>
+        <div><b data-count="10">0</b><i>数据应用</i></div>
+        <div><b data-count="5">0</b><i>重量级奖项</i></div>
+      </div>
+    </div>
+    <a class="hero__scroll" href="#about">↓</a>
+  </header>
+
+  <main>
+    <!-- ===== 关于我 ===== -->
+    <section class="section reveal" id="about">
+      <h2 class="section__title"><em>01</em>关于我</h2>
+      <div class="about">
+        <blockquote class="about__quote">
+          物联网工程在读，热爱用代码解决实际问题，独立开发者。倾向于用工程化思维拆解复杂问题，习惯把杂乱的信息整理成可执行的清单。对技术创造有持续的驱动力，相信「做出东西」比「谈论想法」更有价值。
+        </blockquote>
+        <div class="about__grid">
+          <div class="about__card"><b>🎓 院校</b><p>上海商学院 · 物联网工程（2026级）<br/>班长兼副团支书</p></div>
+          <div class="about__card"><b>🚀 路径</b><p>上海信息技术学校 软件与信息服务<br/>→ 三校生高考总分第一（257/300）考入</p></div>
+          <div class="about__card"><b>🧭 方向</b><p>数据分析 · 嵌入式开发基础 · 物联网应用</p></div>
+          <div class="about__card"><b>🧠 特质</b><p>INTJ / ENTJ 倾向：目标导向、高自主性、结构化输出</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 荣誉时间线 ===== -->
+    <section class="section reveal" id="honors">
+      <h2 class="section__title"><em>02</em>荣誉时刻</h2>
+      <div class="timeline">
+        <div class="timeline__item">
+          <span class="timeline__year">2025</span>
+          <div><b>中等职业教育国家奖学金</b><p>2024-2025 学年度获奖，作为上海市两名入选的中职学生代表之一，事迹荣登《人民日报》</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2025</span>
+          <div><b>全国中职信息技术应用能力大赛 · 团体一等奖</b><p>决赛 大数据应用与 AI 服务赛道</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2026</span>
+          <div><b>上海三校生高考 · 总分第一 &amp; 数学单科第一</b><p>总分 257/300（语文 77 · 数学 93 · 英语 87），考入上海商学院物联网工程专业</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2024</span>
+          <div><b>世界职业院校技能大赛 · 团体金奖</b><p>2024 年总决赛争夺赛 电子与信息赛道二</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">在校</span>
+          <div><b>上海市「星光计划」技能大赛一等奖 · 多次校级特等奖学金</b><p>持续保持专业前列</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== 项目宇宙 ===== -->
+    <section class="section reveal" id="projects">
+      <h2 class="section__title"><em>03</em>项目宇宙</h2>
+      <p class="section__desc">73+ 个独立开发并部署的线上作品，按星系分类。点击任意卡片即可访问。</p>
+      <div class="filter" id="filter">
+        <button class="filter__btn is-active" data-cat="all">全部</button>
+        <button class="filter__btn" data-cat="tool">🧰 效率工具 · 31</button>
+        <button class="filter__btn" data-cat="game">🎮 经典游戏 · 32</button>
+        <button class="filter__btn" data-cat="app">📊 数据应用 · 9</button>
+        <button class="filter__btn" data-cat="hub">🛰️ 星际集成</button>
+      </div>
+      <div class="projects" id="projectsGrid"></div>
+    </section>
+
+    <!-- ===== 技能栈 ===== -->
+    <section class="section reveal" id="skills">
+      <h2 class="section__title"><em>04</em>技能栈</h2>
+      <div class="skills">
+        <div class="skills__group"><b>编程语言</b><div><span>Python · 熟练</span><span>C · 入门</span><span>HTML / CSS / JS · 基础前端</span></div></div>
+        <div class="skills__group"><b>开发工具</b><div><span>Git</span><span>Netlify</span><span>Render</span><span>VS Code</span></div></div>
+        <div class="skills__group"><b>专业方向</b><div><span>数据分析</span><span>嵌入式开发基础</span><span>物联网应用</span></div></div>
+        <div class="skills__group"><b>软实力</b><div><span>技术写作</span><span>项目复盘</span><span>信息整合</span><span>结构化文档</span></div></div>
+      </div>
+    </section>
+
+    <!-- ===== 目标 ===== -->
+    <section class="section reveal" id="goals">
+      <h2 class="section__title"><em>05</em>当前目标 · 2026-2027</h2>
+      <div class="goals">
+        <div class="goals__card"><b>📖 学业</b><p>稳住 GPA，攻克 C 语言与嵌入式基础</p></div>
+        <div class="goals__card"><b>🗣️ 英语</b><p>雅思 6.5-7.0，四级顺带通过</p></div>
+        <div class="goals__card"><b>🏆 竞赛</b><p>大英赛（大一）· 蓝桥杯软件赛道（大二）· 大数据/物联网竞赛</p></div>
+        <div class="goals__card"><b>🛠️ 项目</b><p>推进 TinyClimate 物联网项目，完善 Sloaner 系列项目库</p></div>
+        <div class="goals__card"><b>🔭 探索</b><p>关注 Swift Student Challenge，探索 iOS 开发方向</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 俞顺利 YuSloane · <b>Sloaner Nexus</b></p>
+    <p class="footer__links">
+      <a href="https://github.com/xinxi2024" target="_blank" rel="noopener">GitHub</a> ·
+      <a href="https://ysloaner-treasure-chest.onrender.com/" target="_blank" rel="noopener">百宝箱</a> ·
+      <a href="https://ysloaner-game-empire.netlify.app/" target="_blank" rel="noopener">游戏帝国</a> ·
+      <a href="https://ysloaner-technological.netlify.app/" target="_blank" rel="noopener">智启星际</a>
+    </p>
+    <p class="footer__motto">做出东西，比谈论想法更有价值。</p>
+  </footer>
+
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
