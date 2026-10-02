@@ -152,7 +152,9 @@ const ROLES = [
   "73+ 个线上项目的创造者",
 ];
 const typedEl = document.getElementById("typed");
-(function typeLoop(roleIdx = 0, charIdx = 0, deleting = false) {
+if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  typedEl.textContent = ROLES[0]; // 减弱动效偏好：静态展示，不启动打字机
+} else (function typeLoop(roleIdx = 0, charIdx = 0, deleting = false) {
   const text = ROLES[roleIdx];
   typedEl.textContent = text.slice(0, charIdx);
   let delay = deleting ? 34 : 82;
@@ -301,3 +303,15 @@ document.getElementById("navToggle").addEventListener("click", () =>
   document.getElementById("navLinks").classList.toggle("is-open"));
 document.querySelectorAll("#navLinks a").forEach(a =>
   a.addEventListener("click", () => document.getElementById("navLinks").classList.remove("is-open")));
+
+/* ---------- 彩蛋：切走标签页时替换标题 ---------- */
+const originalTitle = document.title;
+document.addEventListener("visibilitychange", () => {
+  document.title = document.hidden ? "🌌 星空等你回来 · Sloaner Nexus" : originalTitle;
+});
+
+/* ---------- 页脚年份自动更新 ---------- */
+(() => {
+  const footerP = document.querySelector(".footer p");
+  if (footerP) footerP.innerHTML = footerP.innerHTML.replace("© 2026", `© ${new Date().getFullYear()}`);
+})();
