@@ -16,9 +16,10 @@
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-/* 键盘导航：统一的可见焦点环（鼠标点击不显示） */
-:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 6px; }
+html {
+  scroll-behavior: smooth;
+  scrollbar-color: rgba(148, 163, 184, .45) var(--bg); /* Firefox 标准滚动条配色 */
+}
 body {
   background: var(--bg);
   color: var(--text);
@@ -38,10 +39,14 @@ a { color: inherit; text-decoration: none; }
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(34, 211, 238, .5); }
 
-/* ---------- 键盘可达性 ---------- */
+/* ---------- 键盘可达性：统一的可见焦点环（鼠标点击不显示） ---------- */
 :focus-visible {
   outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 4px;
 }
+
+/* ---------- Netlify 右下角角标：与内联脚本的 localStorage 预隐藏形成双保险，
+   即使首访竞态下 iframe 已挂载也不可见 ---------- */
+#nl-badge-frame, #nl-hud-frame { display: none !important; }
 
 /* ---------- 减弱动效偏好 ---------- */
 @media (prefers-reduced-motion: reduce) {

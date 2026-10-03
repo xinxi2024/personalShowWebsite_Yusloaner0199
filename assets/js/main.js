@@ -132,7 +132,13 @@ document.getElementById("filter").addEventListener("click", e => {
   currentCat = btn.dataset.cat;
   renderProjects();
 });
-searchInput.addEventListener("input", renderProjects);
+/* 输入事件每帧最多重建一次卡片（连续打字时不再每个按键都全量重建 73 个节点） */
+let projectsQueued = false;
+searchInput.addEventListener("input", () => {
+  if (projectsQueued) return;
+  projectsQueued = true;
+  requestAnimationFrame(() => { projectsQueued = false; renderProjects(); });
+});
 
 /* ---------- 聚光灯卡片：鼠标位置追踪 ---------- */
 document.addEventListener("mousemove", e => {
@@ -264,8 +270,11 @@ if (matchMedia("(hover: hover)").matches) {
   let gx = 0, gy = 0, tx = 0, ty = 0;
   addEventListener("mousemove", e => { tx = e.clientX; ty = e.clientY; document.body.classList.add("has-cursor"); });
   (function follow() {
-    gx += (tx - gx) * 0.08; gy += (ty - gy) * 0.08;
-    glow.style.left = gx + "px"; glow.style.top = gy + "px";
+    // 标签页隐藏时跳过样式写入，避免不可见的后台持续占用主线程
+    if (!document.hidden) {
+      gx += (tx - gx) * 0.08; gy += (ty - gy) * 0.08;
+      glow.style.left = gx + "px"; glow.style.top = gy + "px";
+    }
     requestAnimationFrame(follow);
   })();
 }
@@ -661,23 +670,36 @@ if (!REDUCED) {
     try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), likes, liked, comments })); } catch { /* 存储满或被禁 */ }
   };
 
-  async function request(path, options = {}) {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 12000);
-    try {
-      const res = await fetch(API + path, {
-        method: "GET",
-        ...options,
-        signal: ctrl.signal,
-        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-      });
-      const data = await res.json().catch(() => ({ ok: false, error: "星链响应解析失败" }));
-      if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
-      return data;
-    } finally {
-      clearTimeout(timer);
-    }
+  /* 软超时（关键）：绝不能调用 AbortController.abort() —— 一旦 abort，
+     Chrome 网络层会无条件在控制台打印 net::ERR_ABORTED 红字，try/catch 消不掉。
+     改为「放弃等待」：定时器只拒绝等待方，请求在后台自行结束，控制台保持干净。 */
+  const REQUEST_TIMEOUT = 12000;
+  function softTimeout(ms) {
+    let t;
+    const p = new Promise((_, reject) => { t = setTimeout(() => reject(new Error("TIMEOUT")), ms); });
+    p.cancel = () => clearTimeout(t);
+    return p;
   }
+  async function request(path, options = {}) {
+    const timer = softTimeout(REQUEST_TIMEOUT);
+    let res;
+    try {
+      res = await Promise.race([
+        fetch(API + path, {
+          method: "GET",
+          ...options,
+          headers: { "Content-Type": "application/json", ...(options.headers || {}) },
+        }),
+        timer,
+      ]);
+    } finally {
+      timer.cancel();
+    }
+    const data = await res.json().catch(() => ({ ok: false, error: "星链响应解析失败" }));
+    if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  }
+  const friendlyErr = err => err.message === "TIMEOUT" ? "星链响应超时，请稍后再试" : (err.message || "网络异常，请稍后再试");
 
   const hueOf = s => {
     let h = 0;
@@ -828,19 +850,22 @@ if (!REDUCED) {
       () => `<div class="gb__skeleton"><i></i><div><span></span><span></span></div></div>`).join("");
   }
 
-  /* 拉取云端状态：冷启动/抖动导致首次失败（含超时 abort）时自动重试 1 次 */
+  /* 拉取云端状态：冷启动/抖动导致首次失败（含软超时）时自动重试 1 次；
+     离线时不发无意义的请求，直接走缓存降级 */
   async function fetchState() {
+    if (navigator.onLine === false) throw new Error("OFFLINE");
     const url = `/state?vid=${encodeURIComponent(vid)}`;
     try {
       return await request(url);
     } catch (err1) {
+      if (navigator.onLine === false) throw err1;
       await new Promise(r => setTimeout(r, 800));
       return request(url); // 第二次仍失败则抛给 refresh 走离线降级
     }
   }
 
-  /* 单飞：多个触发源（进入视口/轮询/切回标签页）同时调用时共用一个请求，
-     既省请求也消除重复 abort 带来的 net::ERR_ABORTED 噪声 */
+  /* 单飞：多个触发源（进入视口/轮询/切回标签页/网络恢复）同时调用时共用一个请求，
+     既省请求也避免并发竞态 */
   let refreshing = null;
   function refresh(silent = false) {
     if (refreshing) return refreshing;
@@ -894,7 +919,7 @@ if (!REDUCED) {
     } catch (err) {
       liked = prevLiked; likes = prevLikes;
       paintSiteLike();
-      toast(err.message || "点赞失败，稍后再试", "error");
+      toast(err.message === "TIMEOUT" ? "点赞超时，状态稍后自动同步" : (err.message || "点赞失败，稍后再试"), "error");
     } finally {
       inflight--;
       likeBtn.classList.remove("is-busy");
@@ -925,7 +950,7 @@ if (!REDUCED) {
       counter.textContent = "0 / 500";
       toast("信号已抵达星际，感谢留言 ✦", "success");
     } catch (err) {
-      toast(err.message || "发射失败，请稍后再试", "error");
+      toast(friendlyErr(err), "error");
     } finally {
       inflight--;
       submitBtn.disabled = false;
@@ -960,7 +985,7 @@ if (!REDUCED) {
         c.liked = prev.liked; c.likes = prev.likes;
         cLike.classList.toggle("is-liked", c.liked);
         cLike.textContent = `♥ ${c.likes}`;
-        toast(err.message || "操作失败", "error");
+        toast(friendlyErr(err), "error");
       } finally {
         inflight--;
         cLike.disabled = false;
@@ -983,7 +1008,7 @@ if (!REDUCED) {
         toast("留言已回收", "success");
       } catch (err) {
         cDel.disabled = false;
-        toast(err.message || "删除失败", "error");
+        toast(friendlyErr(err), "error");
       } finally {
         inflight--;
       }
@@ -1003,11 +1028,13 @@ if (!REDUCED) {
   }, { threshold: .15 }).observe(section);
 
   setInterval(() => {
-    if (!loaded || document.hidden || inflight) return;
+    if (!loaded || document.hidden || inflight || navigator.onLine === false) return;
     const r = section.getBoundingClientRect();
     if (r.top < innerHeight && r.bottom > 0) refresh(true);
   }, 45000);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden && loaded && !inflight) refresh(true);
   });
+  /* 断网期间展示缓存；网络恢复后自动追回最新状态 */
+  window.addEventListener("online", () => refresh(true));
 })();

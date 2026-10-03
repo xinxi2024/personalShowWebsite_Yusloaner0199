@@ -98,6 +98,9 @@ function publicComment(c, hash) {
 
 /* ---------- 简易内存限流（同一温实例内生效） ---------- */
 const buckets = new Map();
+/* 唯一键（每访客 vid 哈希 / 每 IP）会持续累积，超过高水位后偶发清扫，防止内存无限增长 */
+const BUCKETS_MAX = 5000;
+const BUCKET_TTL = 3600_000;
 /* 通用滑动窗口：key 在 windowMs 内最多 max 次；可选最小间隔 minGapMs */
 function hitLimit(key, max, windowMs, minGapMs = 0) {
   const now = Date.now();
@@ -107,6 +110,13 @@ function hitLimit(key, max, windowMs, minGapMs = 0) {
   b.last = now;
   b.times.push(now);
   buckets.set(key, b);
+  if (buckets.size > BUCKETS_MAX) {
+    for (const [k, v] of buckets) {
+      if (now - v.last > BUCKET_TTL && !v.times.some((t) => now - t < BUCKET_TTL)) {
+        buckets.delete(k);
+      }
+    }
+  }
   return false;
 }
 /* 发评论：稳定指纹维度，20 秒间隔 + 每小时 5 条 */
