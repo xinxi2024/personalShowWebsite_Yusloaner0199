@@ -242,7 +242,12 @@ function tick(t) {
 }
 resize();
 rafId = requestAnimationFrame(tick);
-addEventListener("resize", resize);
+/* resize 防抖：拖拽窗口时避免每帧重算整屏星点 */
+let resizeT = null;
+addEventListener("resize", () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(resize, 150);
+});
 // Hero 滚出视口时暂停星空渲染，省电省性能
 new IntersectionObserver(([e]) => {
   heroVisible = e.isIntersecting;
@@ -369,7 +374,9 @@ let stormUntil = 0;
       setTimeout(() => pre.remove(), 800);
     }, Math.max(0, 620 - (performance.now() - t0)));
   };
-  addEventListener("load", () => setTimeout(finish, 180));
+  // load 可能在本脚本执行前就已触发（脚本被缓存时），必须先判 readyState
+  if (document.readyState === "complete") setTimeout(finish, 180);
+  else addEventListener("load", () => setTimeout(finish, 180));
   setTimeout(finish, 2600); // 兜底：资源异常也必须放行
 })();
 
@@ -452,6 +459,7 @@ function openLightbox(idx) {
   lb.hidden = false;
   document.body.style.overflow = "hidden";
   showLightbox();
+  lbClose.focus({ preventScroll: true }); // 焦点移入灯箱
 }
 function showLightbox() {
   const h = lbList[lbPos];
@@ -494,6 +502,20 @@ addEventListener("keydown", e => {
   if (e.key === "Escape") closeLightbox();
   if (e.key === "ArrowLeft") stepLightbox(-1);
   if (e.key === "ArrowRight") stepLightbox(1);
+  // Tab 焦点陷阱：焦点只在关闭/上一张/下一张之间循环
+  if (e.key === "Tab") {
+    const f = [lbClose, lbPrev, lbNext];
+    const i = f.indexOf(document.activeElement);
+    e.preventDefault();
+    f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length].focus();
+  }
+});
+/* 焦点陷阱兜底：任何方式（原生 Tab/点击/合成事件）把焦点带出灯箱时拉回。
+   延迟到下一个任务执行，规避部分浏览器对 focusin 内嵌套 focus() 的限制 */
+document.addEventListener("focusin", e => {
+  if (!lb.hidden && !lb.contains(e.target)) {
+    setTimeout(() => { if (!lb.hidden) lbClose.focus(); }, 0);
+  }
 });
 /* 触摸滑动切换 */
 let touchX = 0;
@@ -503,30 +525,38 @@ lb.addEventListener("touchend", e => {
   if (Math.abs(dx) > 48) stepLightbox(dx < 0 ? 1 : -1);
 }, { passive: true });
 
-/* ---------- 3D 倾斜（事件委托，适配动态渲染的卡片） ---------- */
+/* ---------- 3D 倾斜（事件委托 + rAF 批处理，一帧最多算一次） ---------- */
 if (!REDUCED && FINE_POINTER) {
-  let tiltEl = null;
+  let tiltEl = null, tiltTarget = null, tiltQueued = false;
   const resetTilt = el => {
     el.style.transform = "";
     el.style.transition = "";
     el.style.removeProperty("--gx");
     el.style.removeProperty("--gy");
   };
-  document.addEventListener("mousemove", e => {
-    const el = e.target.closest && e.target.closest(".tilt");
-    if (el !== tiltEl) {
-      if (tiltEl) resetTilt(tiltEl);
-      tiltEl = el;
-      if (el) el.style.transition = "transform .12s ease-out";
-    }
-    if (!el) return;
+  const applyTilt = (e, el) => {
     const r = el.getBoundingClientRect();
     const gx = (e.clientX - r.left) / r.width;
     const gy = (e.clientY - r.top) / r.height;
     el.style.setProperty("--gx", (gx * 100).toFixed(1) + "%");
     el.style.setProperty("--gy", (gy * 100).toFixed(1) + "%");
     el.style.transform = `perspective(900px) rotateX(${((.5 - gy) * 7).toFixed(2)}deg) rotateY(${((gx - .5) * 9).toFixed(2)}deg) translateY(-3px)`;
-  });
+  };
+  document.addEventListener("mousemove", e => {
+    tiltTarget = e.target;
+    if (tiltQueued) return;
+    tiltQueued = true;
+    requestAnimationFrame(() => {
+      tiltQueued = false;
+      const el = tiltTarget && tiltTarget.closest && tiltTarget.closest(".tilt");
+      if (el !== tiltEl) {
+        if (tiltEl) resetTilt(tiltEl);
+        tiltEl = el;
+        if (el) el.style.transition = "transform .12s ease-out";
+      }
+      if (el) applyTilt(e, el);
+    });
+  }, { passive: true });
   document.addEventListener("mouseout", e => {
     if (!e.relatedTarget && tiltEl) { resetTilt(tiltEl); tiltEl = null; }
   });
@@ -633,7 +663,7 @@ if (!REDUCED) {
 
   async function request(path, options = {}) {
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 10000);
+    const timer = setTimeout(() => ctrl.abort(), 12000);
     try {
       const res = await fetch(API + path, {
         method: "GET",
@@ -712,21 +742,62 @@ if (!REDUCED) {
     return el;
   }
 
+  const EMPTY_TEXT = "🌌 这片星区还很安静 —— 写下第一条留言，成为第一颗星。";
+  function showEmpty(text) {
+    listEl.replaceChildren();
+    const empty = document.createElement("div");
+    empty.className = "gb__empty";
+    empty.textContent = text;
+    listEl.appendChild(empty);
+  }
+
+  /* 就地更新一条已有评论节点（避免整列表重建，导致入场动画在每次轮询时重播闪烁） */
+  function updateCommentNode(node, c) {
+    node.classList.remove("is-pending");
+    const time = node.querySelector("time");
+    if (time) { time.dateTime = c.ts ? new Date(c.ts).toISOString() : ""; time.textContent = c.ts ? relTime(c.ts) : "发送中…"; }
+    const text = node.querySelector(".gb__c-text");
+    if (text) text.textContent = c.text;
+    const like = node.querySelector('[data-action="clike"]');
+    if (like) {
+      like.classList.toggle("is-liked", !!c.liked);
+      like.textContent = `♥ ${c.likes || 0}`;
+      like.disabled = false;
+    }
+    let del = node.querySelector('[data-action="delete"]');
+    if (c.mine && !del) {
+      del = document.createElement("button");
+      del.type = "button"; del.className = "gb__c-del";
+      del.textContent = "删除"; del.dataset.action = "delete";
+      node.querySelector(".gb__c-foot").appendChild(del);
+    } else if (!c.mine && del) {
+      del.remove();
+    }
+  }
+
+  /* keyed 增量渲染：新评论带动画插入，已存在的只更新数字/文案，被删的移除 */
   function renderList() {
     totalEl.textContent = comments.length
       ? `已接收 ${comments.length} 段星际信号`
       : "还没有留言，来发出第一段信号吧";
-    listEl.replaceChildren();
-    if (!comments.length) {
-      const empty = document.createElement("div");
-      empty.className = "gb__empty";
-      empty.textContent = "🌌 这片星区还很安静 —— 写下第一条留言，成为第一颗星。";
-      listEl.appendChild(empty);
-      return;
-    }
-    const frag = document.createDocumentFragment();
-    comments.forEach(c => frag.appendChild(commentNode(c)));
-    listEl.appendChild(frag);
+    if (!comments.length) { showEmpty(EMPTY_TEXT); return; }
+    if (listEl.querySelector(".gb__empty")) listEl.replaceChildren();
+
+    const old = new Map(
+      [...listEl.children].filter(n => n.dataset.id).map(n => [n.dataset.id, n])
+    );
+    const seen = new Set();
+    comments.forEach((c, idx) => {
+      seen.add(c.id);
+      const node = old.get(c.id);
+      if (!node) {
+        // 新节点：按服务端顺序插到正确位置
+        listEl.insertBefore(commentNode(c), listEl.children[idx] || null);
+      } else {
+        updateCommentNode(node, c);
+      }
+    });
+    old.forEach((node, id) => { if (!seen.has(id)) node.remove(); });
   }
 
   function paintSiteLike() {
@@ -757,36 +828,52 @@ if (!REDUCED) {
       () => `<div class="gb__skeleton"><i></i><div><span></span><span></span></div></div>`).join("");
   }
 
-  async function refresh(silent = false) {
-    if (!silent && !loaded) showSkeletons();
+  /* 拉取云端状态：冷启动/抖动导致首次失败（含超时 abort）时自动重试 1 次 */
+  async function fetchState() {
+    const url = `/state?vid=${encodeURIComponent(vid)}`;
     try {
-      const d = await request(`/state?vid=${encodeURIComponent(vid)}`);
-      likes = d.likes | 0;
-      liked = Boolean(d.liked);
-      comments = Array.isArray(d.comments) ? d.comments : [];
-      loaded = true;
-      offline.hidden = true;
-      paintSiteLike();
-      renderList();
-      saveCache();
-    } catch (err) {
-      const raw = localStorage.getItem(CACHE_KEY);
-      if (raw) {
-        try {
-          const c = JSON.parse(raw);
-          likes = c.likes | 0; liked = Boolean(c.liked); comments = c.comments || [];
-          paintSiteLike(); renderList();
-        } catch { /* 缓存损坏则忽略 */ }
-      } else if (!silent) {
-        totalEl.textContent = "星链连接失败";
-        listEl.replaceChildren();
-        const e = document.createElement("div");
-        e.className = "gb__empty";
-        e.textContent = "星链暂时中断，稍后刷新再试";
-        listEl.appendChild(e);
-      }
-      offline.hidden = false;
+      return await request(url);
+    } catch (err1) {
+      await new Promise(r => setTimeout(r, 800));
+      return request(url); // 第二次仍失败则抛给 refresh 走离线降级
     }
+  }
+
+  /* 单飞：多个触发源（进入视口/轮询/切回标签页）同时调用时共用一个请求，
+     既省请求也消除重复 abort 带来的 net::ERR_ABORTED 噪声 */
+  let refreshing = null;
+  function refresh(silent = false) {
+    if (refreshing) return refreshing;
+    refreshing = (async () => {
+      if (!silent && !loaded) showSkeletons();
+      try {
+        const d = await fetchState();
+        likes = d.likes | 0;
+        liked = Boolean(d.liked);
+        comments = Array.isArray(d.comments) ? d.comments : [];
+        loaded = true;
+        offline.hidden = true;
+        paintSiteLike();
+        renderList();
+        saveCache();
+      } catch (err) {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (raw) {
+          try {
+            const c = JSON.parse(raw);
+            likes = c.likes | 0; liked = Boolean(c.liked); comments = c.comments || [];
+            paintSiteLike(); renderList();
+          } catch { /* 缓存损坏则忽略 */ }
+        } else if (!silent && !loaded) {
+          totalEl.textContent = "星链连接失败";
+          showEmpty("星链暂时中断，稍后刷新再试");
+        }
+        offline.hidden = false;
+      } finally {
+        refreshing = null;
+      }
+    })();
+    return refreshing;
   }
 
   /* 站点点赞（乐观更新 + 失败回滚） */

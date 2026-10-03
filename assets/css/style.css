@@ -17,6 +17,8 @@
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
+/* 键盘导航：统一的可见焦点环（鼠标点击不显示） */
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; border-radius: 6px; }
 body {
   background: var(--bg);
   color: var(--text);
@@ -243,7 +245,7 @@ body.has-cursor .cursor-glow { opacity: 1; }
 @keyframes wheel { 60% { transform: translateY(12px); opacity: 0; } 100% { transform: translateY(12px); opacity: 0; } }
 
 /* ---------- 通用 Section ---------- */
-.section { max-width: 1100px; margin: 0 auto; padding: 96px 6vw 24px; scroll-margin-top: 60px; }
+.section { max-width: 1100px; margin: 0 auto; padding: 96px 6vw 24px; scroll-margin-top: 84px; }
 .section__title {
   position: relative; display: inline-block;
   font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 900; margin-bottom: 34px;
@@ -315,6 +317,7 @@ body.has-cursor .cursor-glow { opacity: 1; }
   transition: border-color .25s, transform .25s;
 }
 .timeline__body:hover { border-color: rgba(167, 139, 250, .4); transform: translateX(6px); }
+.timeline__item:last-child { padding-bottom: 0; }
 .timeline__item b { display: block; font-size: 1.05rem; }
 .timeline__item p { color: var(--muted); font-size: .92rem; }
 
