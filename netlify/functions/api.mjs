@@ -82,6 +82,51 @@ function countUrls(text) {
   return (text.match(/https?:\/\//gi) || []).length;
 }
 
+/* ---------- 内容健康度检查（结构性反垃圾） ----------
+ * 只拦截明确的垃圾模式：联系方式引流、刷屏重复、无有效文字。
+ * 不维护敏感词词库、不做语义判断，原则是「宁可漏过，不可误杀正常表达」。 */
+function meaningfulLen(s) {
+  const m = String(s).match(/[\u4e00-\u9fffA-Za-z0-9]/g); // 中文 / 字母 / 数字
+  return m ? m.length : 0;
+}
+/* 归一化：小写 + 去掉空白与常见装饰分隔符，使「1 3 8-xxxx」这类拆写也能被识别 */
+function normalize4spam(s) {
+  return String(s).toLowerCase().replace(/[\s\-_.·*~～•・、，,]/g, "");
+}
+/* 同一 2~4 字片段出现 ≥6 次视为刷屏（哈希计数，O(3n)） */
+function hasRepeatedPhrase(text) {
+  for (const len of [2, 3, 4]) {
+    const seen = new Map();
+    for (let i = 0; i + len <= text.length; i++) {
+      const seg = text.slice(i, i + len);
+      if (!/[\u4e00-\u9fffA-Za-z0-9]{2,}/.test(seg)) continue;
+      const n = (seen.get(seg) || 0) + 1;
+      if (n >= 6) return true;
+      seen.set(seg, n);
+    }
+  }
+  return false;
+}
+/* 返回错误提示字符串；内容健康返回 null。昵称与正文都查（引流常写在昵称里） */
+function moderateContent(name, text) {
+  if (meaningfulLen(text) < 2) return "留言至少要包含 2 个文字字符哦";
+  if (meaningfulLen(name) < 1) return "昵称至少要包含 1 个文字字符";
+  const all = normalize4spam(name + " " + text);
+  if (/1[3-9]\d{9}/.test(all)) return "为保护隐私，留言中不能出现手机号，请删除后再发";
+  // 引流意图词 + 5~12 位数字（群号 / QQ 号）
+  if (/(?:q群|qq群|群号|加群|加q|扣扣|带带我|私聊我|滴滴我)[^0-9a-z]{0,8}[0-9]{5,12}/.test(all)) {
+    return "检测到疑似引流或联系方式，为保护你的隐私请删除后再发";
+  }
+  // 微信号类：意图词 + 6~20 位字母数字账号
+  if (/(?:微信|vx|v信|薇信|威信|加微|徽信)[^0-9a-z]{0,8}[a-z0-9][a-z0-9_-]{5,19}/.test(all)) {
+    return "检测到疑似微信号等联系方式，请删除后再发";
+  }
+  // 同一字符连续刷屏（12 个以上，正常说话不会这么写）
+  if (/(.)\1{11,}/.test(normalize4spam(text))) return "重复字符太多啦，写点真实想法吧";
+  if (hasRepeatedPhrase(text)) return "相同内容重复太多次啦，请精简后再发";
+  return null;
+}
+
 /* 公开返回：去掉内部 hash 数组，只给数量与当前访客标记 */
 function publicComment(c, hash) {
   const likes = Array.isArray(c.likes) ? c.likes : [];
@@ -207,6 +252,8 @@ export default async (request, context) => {
       if (name.length < 1) return json({ ok: false, error: "请留下你的昵称" }, 400);
       if (text.length < 1) return json({ ok: false, error: "留言内容不能为空" }, 400);
       if (countUrls(text) > 3) return json({ ok: false, error: "一条留言最多包含 3 个链接" }, 400);
+      const bad = moderateContent(name, text);
+      if (bad) return json({ ok: false, error: bad }, 400);
 
       const data = await loadData(store);
       const comment = {

@@ -163,6 +163,7 @@ body.has-cursor .cursor-glow { opacity: 1; }
   animation: fadeUp .8s .1s both;
 }
 .hero__name {
+  position: relative;
   font-size: clamp(2.6rem, 6.5vw, 4.2rem); font-weight: 900; margin: 6px 0 10px;
   animation: fadeUp .8s .25s both;
 }
@@ -836,6 +837,77 @@ body.storm .aurora { opacity: .9; }
 body.storm .aurora--1 { animation-duration: 5s; }
 body.storm .aurora--2 { animation-duration: 6s; }
 
+/* ============================================================
+   v4 星际光标 / 标题流光 / 时间线点亮
+   ============================================================ */
+
+/* ---------- 自定义星际光标：光点 + 彗星弧环 + 星尘轨迹（仅桌面精细指针，JS 挂载） ---------- */
+@media (hover: hover) and (pointer: fine) {
+  body.cursor-custom, body.cursor-custom * { cursor: none !important; }
+}
+.cursor-dot, .cursor-ring {
+  position: fixed; top: 0; left: 0; z-index: 2000;
+  pointer-events: none; border-radius: 50%; will-change: transform;
+  opacity: 0; transition: opacity .25s ease, background .25s ease, box-shadow .25s ease;
+}
+.cursor-dot {
+  width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
+  background: #cffafe;
+  box-shadow: 0 0 8px rgba(34, 211, 238, .95), 0 0 22px rgba(34, 211, 238, .5);
+}
+.cursor-ring {
+  width: 40px; height: 40px; margin: -20px 0 0 -20px;
+  /* 一段青紫渐变彗星弧，角度由 @property 驱动旋转，与位移 transform 互不干扰 */
+  background: conic-gradient(from var(--ring-angle, 0deg),
+    transparent 0deg, rgba(34, 211, 238, .95) 130deg, rgba(167, 139, 250, .95) 225deg, transparent 350deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff calc(100% - 2.5px));
+          mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), #fff calc(100% - 2.5px));
+  animation: ringSpin 2.2s linear infinite;
+}
+.cursor-ring.is-hover {
+  background: conic-gradient(from var(--ring-angle, 0deg), #22d3ee, #a78bfa, #f0abfc, #22d3ee);
+  box-shadow: 0 0 16px rgba(34, 211, 238, .22);
+}
+.cursor-dot.is-hidden, .cursor-ring.is-hidden { opacity: 0; }
+body.cursor-ready .cursor-dot, body.cursor-ready .cursor-ring { opacity: .92; }
+@property --ring-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes ringSpin { to { --ring-angle: 360deg; } }
+/* 不支持 @property 的浏览器退化为静态弧线，造型依然成立 */
+
+.cursor-trail {
+  position: fixed; inset: 0; z-index: 1999; overflow: hidden;
+  pointer-events: none;
+}
+.cursor-trail i {
+  position: absolute; width: 4px; height: 4px; border-radius: 50%;
+  background: hsl(var(--hue, 190) 90% 72%);
+  box-shadow: 0 0 8px hsl(var(--hue, 190) 90% 65%);
+  animation: cursorTrail .68s ease-out forwards;
+}
+@keyframes cursorTrail {
+  to { transform: translate(var(--tx, 0), var(--ty, 0)) scale(0); opacity: 0; }
+}
+
+/* ---------- Hero 主标题：周期性流光扫过 ---------- */
+.hero__name { overflow: hidden; }
+.hero__name::after {
+  content: ""; position: absolute; inset: -20% -50%; pointer-events: none;
+  background: linear-gradient(110deg, transparent 42%, rgba(165, 243, 252, .38) 50%, rgba(167, 139, 250, .28) 54%, transparent 62%);
+  transform: translateX(-70%);
+  animation: nameSweep 5.8s ease-in-out 1.4s infinite;
+}
+@keyframes nameSweep {
+  0%, 52% { transform: translateX(-70%); }
+  88%, 100% { transform: translateX(72%); }
+}
+
+/* ---------- 时间线：进入视口逐条点亮 ---------- */
+.timeline__item {
+  opacity: 0; transform: translateX(-14px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.timeline__item.is-visible { opacity: 1; transform: none; }
+
 /* ---------- v3 响应式 ---------- */
 @media (max-width: 760px) {
   .gb { grid-template-columns: 1fr; }
@@ -850,4 +922,6 @@ body.storm .aurora--2 { animation-duration: 6s; }
 @media (prefers-reduced-motion: reduce) {
   .grain, .preloader__orbit::before, .preloader__orbit::after, .preloader__orbit i,
   .gb__live i, .gb__heart.is-liked::before { animation: none !important; }
+  .hero__name::after { display: none; }
+  .timeline__item { opacity: 1; transform: none; }
 }

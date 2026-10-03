@@ -125,7 +125,7 @@ function renderProjects() {
 renderProjects();
 
 document.getElementById("filter").addEventListener("click", e => {
-  const btn = e.target.closest(".filter__btn");
+  const btn = e.target && e.target.closest && e.target.closest(".filter__btn");
   if (!btn) return;
   document.querySelectorAll(".filter__btn").forEach(b => b.classList.remove("is-active"));
   btn.classList.add("is-active");
@@ -142,7 +142,7 @@ searchInput.addEventListener("input", () => {
 
 /* ---------- 聚光灯卡片：鼠标位置追踪 ---------- */
 document.addEventListener("mousemove", e => {
-  const card = e.target.closest(".spot");
+  const card = e.target && e.target.closest && e.target.closest(".spot");
   if (!card) return;
   const r = card.getBoundingClientRect();
   card.style.setProperty("--mx", `${e.clientX - r.left}px`);
@@ -264,16 +264,28 @@ addEventListener("mousemove", e => {
   mouseY = e.clientY / innerHeight;
 });
 
-/* ---------- 光标辉光 ---------- */
+/* ---------- 光标辉光（顺带驱动极光鼠标视差，共用一个 rAF） ---------- */
 const glow = document.getElementById("cursorGlow");
 if (matchMedia("(hover: hover)").matches) {
   let gx = 0, gy = 0, tx = 0, ty = 0;
-  addEventListener("mousemove", e => { tx = e.clientX; ty = e.clientY; document.body.classList.add("has-cursor"); });
+  let ntx = 0, nty = 0, ax1 = 0, ay1 = 0, ax2 = 0, ay2 = 0;
+  const aurora1 = document.querySelector(".aurora--1");
+  const aurora2 = document.querySelector(".aurora--2");
+  addEventListener("mousemove", e => {
+    tx = e.clientX; ty = e.clientY;
+    ntx = e.clientX / innerWidth - 0.5; nty = e.clientY / innerHeight - 0.5;
+    document.body.classList.add("has-cursor");
+  }, { passive: true });
   (function follow() {
     // 标签页隐藏时跳过样式写入，避免不可见的后台持续占用主线程
     if (!document.hidden) {
       gx += (tx - gx) * 0.08; gy += (ty - gy) * 0.08;
       glow.style.left = gx + "px"; glow.style.top = gy + "px";
+      // 极光随光标缓慢漂移（独立 CSS translate 属性，与 drift 关键帧的 transform 叠加）
+      ax1 += (ntx * 34 - ax1) * 0.04; ay1 += (nty * 22 - ay1) * 0.04;
+      ax2 += (ntx * -26 - ax2) * 0.05; ay2 += (nty * -18 - ay2) * 0.05;
+      if (aurora1) aurora1.style.translate = `${ax1.toFixed(2)}px ${ay1.toFixed(2)}px`;
+      if (aurora2) aurora2.style.translate = `${ax2.toFixed(2)}px ${ay2.toFixed(2)}px`;
     }
     requestAnimationFrame(follow);
   })();
@@ -446,7 +458,7 @@ document.querySelectorAll("#honorFilter [data-hcat]").forEach(btn => {
 });
 renderHonors();
 document.getElementById("honorFilter").addEventListener("click", e => {
-  const btn = e.target.closest("[data-hcat]");
+  const btn = e.target && e.target.closest && e.target.closest("[data-hcat]");
   if (!btn) return;
   document.querySelectorAll("#honorFilter .filter__btn").forEach(b => b.classList.remove("is-active"));
   btn.classList.add("is-active");
@@ -494,12 +506,12 @@ function stepLightbox(dir) {
   showLightbox();
 }
 honorGrid.addEventListener("click", e => {
-  const card = e.target.closest(".honor-card");
+  const card = e.target && e.target.closest && e.target.closest(".honor-card");
   if (card) openLightbox(+card.dataset.hi);
 });
 honorGrid.addEventListener("keydown", e => {
   if (e.key !== "Enter" && e.key !== " ") return;
-  const card = e.target.closest(".honor-card");
+  const card = e.target && e.target.closest && e.target.closest(".honor-card");
   if (card) { e.preventDefault(); openLightbox(+card.dataset.hi); }
 });
 document.getElementById("lbClose").addEventListener("click", closeLightbox);
@@ -582,10 +594,78 @@ if (!REDUCED && FINE_POINTER) {
   });
 }
 
+/* ---------- v4 星际光标：即时光点 + 弹性彗星环 + 星尘轨迹（仅桌面精细指针） ---------- */
+if (!REDUCED && FINE_POINTER) {
+  const dot = document.createElement("div");
+  const ring = document.createElement("div");
+  const trail = document.createElement("div");
+  dot.className = "cursor-dot";
+  ring.className = "cursor-ring";
+  trail.className = "cursor-trail";
+  document.body.append(trail, ring, dot);
+  document.body.classList.add("cursor-custom");
+
+  const INTERACTIVE = "a,button,input,textarea,select,label,.tilt,[role='button'],[tabindex]";
+  let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
+  let isHover = false, isDown = false, seen = false, lastPX = mx, lastPY = my;
+  const particles = [];
+  const MAX_P = 18;
+
+  function spawnTrail(x, y) {
+    const p = document.createElement("i");
+    const ang = Math.random() * Math.PI * 2;
+    const dist = 10 + Math.random() * 16;
+    p.style.left = x + "px";
+    p.style.top = y + "px";
+    p.style.setProperty("--hue", String((175 + Math.random() * 105) | 0)); // 青→蓝→紫
+    p.style.setProperty("--tx", (Math.cos(ang) * dist).toFixed(1) + "px");
+    p.style.setProperty("--ty", (Math.sin(ang) * dist).toFixed(1) + "px");
+    trail.appendChild(p);
+    particles.push(p);
+    if (particles.length > MAX_P) particles.shift().remove(); // 粒子池硬上限，保性能
+    setTimeout(() => {
+      p.remove();
+      const i = particles.indexOf(p);
+      if (i >= 0) particles.splice(i, 1);
+    }, 720);
+  }
+
+  addEventListener("mousemove", e => {
+    mx = e.clientX; my = e.clientY;
+    if (!seen) { seen = true; document.body.classList.add("cursor-ready"); }
+    dot.classList.remove("is-hidden"); ring.classList.remove("is-hidden");
+    const over = !!(e.target && e.target.closest && e.target.closest(INTERACTIVE));
+    if (over !== isHover) {
+      isHover = over;
+      ring.classList.toggle("is-hover", over);
+      dot.classList.toggle("is-hover", over);
+    }
+    // 每移动 15px 洒落一粒星尘
+    if (Math.hypot(mx - lastPX, my - lastPY) > 15) {
+      spawnTrail(mx, my);
+      lastPX = mx; lastPY = my;
+    }
+  }, { passive: true });
+  addEventListener("mousedown", () => { isDown = true; });
+  addEventListener("mouseup", () => { isDown = false; });
+  document.addEventListener("mouseleave", () => {
+    dot.classList.add("is-hidden"); ring.classList.add("is-hidden");
+  });
+
+  (function cursorLoop() {
+    rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18; // 弹性滞后，形成拖尾
+    const ds = isDown ? 1.6 : (isHover ? 0.6 : 1);
+    const rs = isDown ? 0.8 : (isHover ? 1.5 : 1);
+    dot.style.transform = `translate(${mx.toFixed(1)}px,${my.toFixed(1)}px) scale(${ds})`;
+    ring.style.transform = `translate(${rx.toFixed(1)}px,${ry.toFixed(1)}px) scale(${rs})`;
+    requestAnimationFrame(cursorLoop);
+  })();
+}
+
 /* ---------- 涟漪点击反馈 ---------- */
 if (!REDUCED) {
   document.addEventListener("pointerdown", e => {
-    const t = e.target.closest && e.target.closest(".ripple");
+    const t = e.target && e.target.closest && e.target.closest(".ripple");
     if (!t) return;
     const r = t.getBoundingClientRect();
     const ink = document.createElement("span");
@@ -607,6 +687,22 @@ if (!REDUCED) {
       heroInner.style.opacity = Math.max(0, 1 - y / 620);
     }
   }, { passive: true });
+}
+
+/* ---------- 时间线：进入视口逐条点亮（共用一个观察器） ---------- */
+if (REDUCED) {
+  document.querySelectorAll(".timeline__item").forEach(el => el.classList.add("is-visible"));
+} else {
+  const tlIO = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const el = en.target;
+      el.style.transitionDelay = (([].indexOf.call(el.parentNode.children, el)) % 4) * 0.08 + "s";
+      el.classList.add("is-visible");
+      tlIO.unobserve(el);
+    });
+  }, { threshold: 0.2, rootMargin: "0px 0px -8% 0px" });
+  document.querySelectorAll(".timeline__item").forEach(el => tlIO.observe(el));
 }
 
 /* ---------- 隐藏彩蛋：Konami Code → 星陨如雨 ---------- */
@@ -637,10 +733,44 @@ if (!REDUCED) {
 
   const API = "/api";
   const NAME_KEY = "nexus_name", VID_KEY = "nexus_vid", CACHE_KEY = "nexus_gb_cache";
-  let vid = localStorage.getItem(VID_KEY);
+  let vid = null;
+  try { vid = localStorage.getItem(VID_KEY); } catch { /* 隐私模式禁止读取 */ }
   if (!vid) {
     vid = (crypto.randomUUID ? crypto.randomUUID() : "v-" + Date.now() + "-" + Math.random().toString(16).slice(2));
-    localStorage.setItem(VID_KEY, vid);
+    try { localStorage.setItem(VID_KEY, vid); } catch { /* 禁止写入则本次会话内使用内存 vid */ }
+  }
+
+  /* 客户端镜像审核（与服务端规则保持一致）：提交前即时拦截，省一次往返。
+     只做结构性反垃圾：联系方式引流 / 刷屏重复 / 无有效文字，不维护敏感词库 */
+  const meaningfulLen = s => ((String(s).match(/[\u4e00-\u9fffA-Za-z0-9]/g)) || []).length;
+  const normalize4spam = s => String(s).toLowerCase().replace(/[\s\-_.·*~～•・、，,]/g, "");
+  function hasRepeatedPhrase(text) {
+    for (const len of [2, 3, 4]) {
+      const seen = new Map();
+      for (let i = 0; i + len <= text.length; i++) {
+        const seg = text.slice(i, i + len);
+        if (!/[\u4e00-\u9fffA-Za-z0-9]{2,}/.test(seg)) continue;
+        const n = (seen.get(seg) || 0) + 1;
+        if (n >= 6) return true;
+        seen.set(seg, n);
+      }
+    }
+    return false;
+  }
+  function moderateContent(name, text) {
+    if (meaningfulLen(text) < 2) return "留言至少要包含 2 个文字字符哦";
+    if (meaningfulLen(name) < 1) return "昵称至少要包含 1 个文字字符";
+    const all = normalize4spam(name + " " + text);
+    if (/1[3-9]\d{9}/.test(all)) return "为保护隐私，留言中不能出现手机号，请删除后再发";
+    if (/(?:q群|qq群|群号|加群|加q|扣扣|带带我|私聊我|滴滴我)[^0-9a-z]{0,8}[0-9]{5,12}/.test(all)) {
+      return "检测到疑似引流或联系方式，为保护你的隐私请删除后再发";
+    }
+    if (/(?:微信|vx|v信|薇信|威信|加微|徽信)[^0-9a-z]{0,8}[a-z0-9][a-z0-9_-]{5,19}/.test(all)) {
+      return "检测到疑似微信号等联系方式，请删除后再发";
+    }
+    if (/(.)\1{11,}/.test(normalize4spam(text))) return "重复字符太多啦，写点真实想法吧";
+    if (hasRepeatedPhrase(text)) return "相同内容重复太多次啦，请精简后再发";
+    return null;
   }
 
   const likeBtn = document.getElementById("likeBtn");
@@ -927,7 +1057,7 @@ if (!REDUCED) {
   });
 
   /* 表单 */
-  nameInput.value = localStorage.getItem(NAME_KEY) || "";
+  try { nameInput.value = localStorage.getItem(NAME_KEY) || ""; } catch { /* 忽略 */ }
   textInput.addEventListener("input", () => {
     counter.textContent = `${textInput.value.length} / 500`;
   });
@@ -936,7 +1066,9 @@ if (!REDUCED) {
     const name = nameInput.value.trim();
     const text = textInput.value.trim();
     if (!name || !text) { toast("昵称和留言内容都要填写哦", "error"); return; }
-    localStorage.setItem(NAME_KEY, name);
+    const bad = moderateContent(name, text);
+    if (bad) { toast(bad, "error"); return; }
+    try { localStorage.setItem(NAME_KEY, name); } catch { /* 忽略存储异常 */ }
     submitBtn.disabled = true;
     inflight++;
     const oldLabel = submitBtn.textContent;
@@ -960,8 +1092,8 @@ if (!REDUCED) {
 
   /* 评论点赞 / 删除（事件委托） */
   listEl.addEventListener("click", async e => {
-    const cLike = e.target.closest('[data-action="clike"]');
-    const cDel = e.target.closest('[data-action="delete"]');
+    const cLike = e.target && e.target.closest && e.target.closest('[data-action="clike"]');
+    const cDel = e.target && e.target.closest && e.target.closest('[data-action="delete"]');
 
     if (cLike) {
       if (cLike.disabled) return; // 防连点：请求未结束前忽略
