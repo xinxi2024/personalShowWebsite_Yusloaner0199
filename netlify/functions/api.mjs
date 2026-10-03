@@ -113,6 +113,10 @@ function hitLimit(key, max, windowMs, minGapMs = 0) {
 function commentLimited(hash) {
   return hitLimit("c:" + hash, 5, 3600_000, 20_000);
 }
+/* 发评论：IP 维度兜底（防止脚本批量生成 vid 绕过），每小时 10 条 */
+function commentIpLimited(ip) {
+  return hitLimit("ci:" + ip, 10, 3600_000);
+}
 /* 点赞：IP 维度防刷（vid 可被脚本批量生成），每分钟 30 次 */
 function likeLimited(ip) {
   return hitLimit("l:" + ip, 30, 60_000);
@@ -183,7 +187,7 @@ export default async (request, context) => {
 
     /* ============ POST /api/comment ============ */
     if (route === "comment" && request.method === "POST") {
-      if (commentLimited(hash)) {
+      if (commentLimited(hash) || commentIpLimited(clientIp(request, context))) {
         return json({ ok: false, error: "操作太频繁啦，喝口水稍后再试（20 秒 / 条）" }, 429);
       }
       const name = cleanText(body.name, NAME_MAX);

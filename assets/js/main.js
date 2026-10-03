@@ -383,28 +383,37 @@ function toast(msg, type = "") {
   setTimeout(() => el.remove(), 3300);
 }
 
-/* ---------- 证书陈列馆数据（均为本人真实证书扫描件） ---------- */
+/* ---------- 证书陈列馆数据（均为本人真实证书扫描件，严格按获奖等级分级） ----------
+   cat 四级：world 国际/世界级 · national 国家级 · city 省市级 · school 校级 */
 const HONORS = [
-  { img: "assets/honors/world-gold-2024.jpg", title: "世界职业院校技能大赛 · 金奖", sub: "2024 总决赛争夺赛 · 电子与信息赛道二", issuer: "世界职业院校技能大赛组委会 · 2024.10", cat: "top", medal: "金奖", cls: "" },
-  { img: "assets/honors/national-scholarship-2023.jpg", title: "中等职业教育国家奖学金（首次）", sub: "2023–2024 学年度", issuer: "教育部 · 人社部 · 2024.12", cat: "top", medal: "国家级", cls: "" },
-  { img: "assets/honors/national-scholarship-2024.jpg", title: "中等职业教育国家奖学金（再度）", sub: "2024–2025 学年度 · 全国百名优秀代表", issuer: "教育部 · 人社部 · 2025.12", cat: "top", medal: "国家级", cls: "" },
-  { img: "assets/honors/ccf-bigdata-2024.jpg", title: "CCF 全国中职信息技术应用能力大赛 · 一等奖", sub: "2024 决赛 · 大数据应用与服务项目", issuer: "中国计算机学会 CCF-SVC · 2024.11", cat: "top", medal: "一等奖", cls: "honor-card__medal--first" },
-  { img: "assets/honors/ccf-ai-2025.jpg", title: "CCF 全国中职信息技术应用能力大赛 · 再度一等奖", sub: "2025 决赛 · 大数据应用与 AI 服务赛道", issuer: "中国计算机学会 CCF-SVC · 2025.11", cat: "top", medal: "一等奖", cls: "honor-card__medal--first" },
-  { img: "assets/honors/zhixing-cup-2026.jpg", title: "「知行杯」全国大学生社会实践大赛 · 全国一等奖", sub: "2026 · 科普知识赛道（大一上学期）", issuer: "知行杯全国组委会 · 2026", cat: "top", medal: "全国一等奖", cls: "honor-card__medal--first" },
-  { img: "assets/honors/starlight-bigdata-ops.jpg", title: "上海市「星光计划」技能大赛 · 一等奖", sub: "第十一届 · 大数据集群与运维搭建项目", issuer: "上海市教委等四委办局 · 2025.06", cat: "city", medal: "一等奖", cls: "honor-card__medal--first" },
-  { img: "assets/honors/shanghai-select-2024.jpg", title: "全国职院技能大赛上海选拔赛 · 二等奖", sub: "2024（中职组）· 大数据应用与服务赛项", issuer: "上海市教委职教处 · 2024.06", cat: "city", medal: "二等奖", cls: "honor-card__medal--second" },
+  /* 🥇 世界 / 国际级 */
+  { img: "assets/honors/world-gold-2024.jpg", title: "世界职业院校技能大赛 · 金奖", sub: "2024 总决赛争夺赛 · 电子与信息赛道二", issuer: "世界职业院校技能大赛组委会 · 2024.10", cat: "world", medal: "🥇 世界金奖", cls: "", cardCls: "honor-card--world" },
+
+  /* 🏆 国家级（5 项） */
+  { img: "assets/honors/national-scholarship-2023.jpg", title: "中等职业教育国家奖学金（首次）", sub: "2023–2024 学年度", issuer: "教育部 · 人社部 · 2024.12", cat: "national", medal: "国家级", cls: "" },
+  { img: "assets/honors/national-scholarship-2024.jpg", title: "中等职业教育国家奖学金（再度）", sub: "2024–2025 学年度 · 全国百名优秀代表", issuer: "教育部 · 人社部 · 2025.12", cat: "national", medal: "国家级", cls: "" },
+  { img: "assets/honors/ccf-bigdata-2024.jpg", title: "CCF 全国中职信息技术应用能力大赛 · 一等奖", sub: "2024 决赛 · 大数据应用与服务项目", issuer: "中国计算机学会 CCF-SVC · 2024.11", cat: "national", medal: "全国一等奖", cls: "honor-card__medal--first" },
+  { img: "assets/honors/ccf-ai-2025.jpg", title: "CCF 全国中职信息技术应用能力大赛 · 再度一等奖", sub: "2025 决赛 · 大数据应用与 AI 服务赛道", issuer: "中国计算机学会 CCF-SVC · 2025.11", cat: "national", medal: "全国一等奖", cls: "honor-card__medal--first" },
+  { img: "assets/honors/zhixing-cup-2026.jpg", title: "「知行杯」全国大学生社会实践大赛 · 全国一等奖", sub: "2026 · 科普知识赛道（大一上学期）", issuer: "知行杯全国组委会 · 2026.10", cat: "national", medal: "全国一等奖", cls: "honor-card__medal--first" },
+
+  /* 🌆 省 / 市级（2 项） */
+  { img: "assets/honors/starlight-bigdata-ops.jpg", title: "上海市「星光计划」技能大赛 · 一等奖", sub: "第十一届 · 大数据集群与运维搭建项目", issuer: "上海市教委等四委办局 · 2025.06", cat: "city", medal: "市级一等奖", cls: "honor-card__medal--city" },
+  { img: "assets/honors/shanghai-select-2024.jpg", title: "全国职院技能大赛上海选拔赛 · 二等奖", sub: "2024（中职组）· 大数据应用与服务赛项", issuer: "上海市教委职教处 · 2024.06", cat: "city", medal: "市级二等奖", cls: "honor-card__medal--second" },
+
+  /* 🏫 校级（2 项） */
   { img: "assets/honors/school-top-scholarship.jpg", title: "校特等奖学金", sub: "2023–2024 学年第一学期", issuer: "上海信息技术学校 · 2024.05", cat: "school", medal: "校级", cls: "honor-card__medal--second" },
-  { img: "assets/honors/school-cadre.jpg", title: "校优秀班干部", sub: "2023–2024 学年第一学期", issuer: "上海信息技术学校 · 2024.05", cat: "school", medal: "校级", cls: "honor-card__medal--second" },
+  { img: "assets/honors/school-cadre.jpg", title: "校优秀学生干部", sub: "2023–2024 学年第一学期", issuer: "上海信息技术学校 · 2024.05", cat: "school", medal: "校级", cls: "honor-card__medal--second" },
 ];
 let hCat = "all";
 const honorGrid = document.getElementById("honorGrid");
 
 function visibleHonors() {
-  return HONORS.map((h, i) => ({ ...h, i })).filter(h => hCat === "all" || h.cat === h.cat);
+  // 注意：右侧必须与当前选中分类 hCat 比较（旧代码误写成 h.cat === h.cat 导致筛选恒真）
+  return HONORS.map((h, i) => ({ ...h, i })).filter(h => hCat === "all" || h.cat === hCat);
 }
 function renderHonors() {
   honorGrid.innerHTML = visibleHonors().map((h, k) => `
-    <figure class="honor-card spot tilt" tabindex="0" role="button" data-hi="${h.i}"
+    <figure class="honor-card spot tilt ${h.cardCls || ""}" tabindex="0" role="button" data-hi="${h.i}"
       style="animation-delay:${Math.min(k * 45, 460)}ms" aria-label="放大查看证书：${h.title}">
       <div class="honor-card__img">
         <img src="${h.img}" alt="${h.title}证书" loading="lazy" decoding="async" />
@@ -414,6 +423,11 @@ function renderHonors() {
       <figcaption><b>${h.title}</b><small>${h.issuer}</small></figcaption>
     </figure>`).join("");
 }
+/* 分类按钮上挂数量徽标，让分级一目了然 */
+document.querySelectorAll("#honorFilter [data-hcat]").forEach(btn => {
+  const c = btn.dataset.hcat;
+  btn.dataset.count = c === "all" ? HONORS.length : HONORS.filter(h => h.cat === c).length;
+});
 renderHonors();
 document.getElementById("honorFilter").addEventListener("click", e => {
   const btn = e.target.closest("[data-hcat]");
@@ -610,6 +624,12 @@ if (!REDUCED) {
   listEl.parentNode.insertBefore(offline, listEl);
 
   let likes = 0, liked = false, comments = [], loaded = false;
+  /* 进行中的写操作数：轮询/切回标签页时若有写操作未完成则跳过，
+     避免服务端旧状态覆盖乐观更新（旧代码存在此竞态） */
+  let inflight = 0;
+  const saveCache = () => {
+    try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), likes, liked, comments })); } catch { /* 存储满或被禁 */ }
+  };
 
   async function request(path, options = {}) {
     const ctrl = new AbortController();
@@ -748,7 +768,7 @@ if (!REDUCED) {
       offline.hidden = true;
       paintSiteLike();
       renderList();
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), likes, liked, comments }));
+      saveCache();
     } catch (err) {
       const raw = localStorage.getItem(CACHE_KEY);
       if (raw) {
@@ -773,6 +793,7 @@ if (!REDUCED) {
   likeBtn.addEventListener("click", async () => {
     if (likeBtn.classList.contains("is-busy")) return;
     likeBtn.classList.add("is-busy");
+    inflight++;
     const prevLiked = liked, prevLikes = likes;
     liked = !prevLiked;
     likes = prevLikes + (liked ? 1 : -1);
@@ -782,12 +803,13 @@ if (!REDUCED) {
       const d = await request("/like", { method: "POST", body: JSON.stringify({ target: "site", vid }) });
       liked = Boolean(d.liked); likes = d.likes | 0;
       paintSiteLike();
-      localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), likes, liked, comments }));
+      saveCache();
     } catch (err) {
       liked = prevLiked; likes = prevLikes;
       paintSiteLike();
       toast(err.message || "点赞失败，稍后再试", "error");
     } finally {
+      inflight--;
       likeBtn.classList.remove("is-busy");
     }
   });
@@ -804,18 +826,21 @@ if (!REDUCED) {
     if (!name || !text) { toast("昵称和留言内容都要填写哦", "error"); return; }
     localStorage.setItem(NAME_KEY, name);
     submitBtn.disabled = true;
+    inflight++;
     const oldLabel = submitBtn.textContent;
     submitBtn.textContent = "跃迁中…";
     try {
       const d = await request("/comment", { method: "POST", body: JSON.stringify({ name, text, vid }) });
       comments.unshift(d.comment);
       renderList();
+      saveCache();
       textInput.value = "";
       counter.textContent = "0 / 500";
       toast("信号已抵达星际，感谢留言 ✦", "success");
     } catch (err) {
       toast(err.message || "发射失败，请稍后再试", "error");
     } finally {
+      inflight--;
       submitBtn.disabled = false;
       submitBtn.textContent = oldLabel;
     }
@@ -827,9 +852,12 @@ if (!REDUCED) {
     const cDel = e.target.closest('[data-action="delete"]');
 
     if (cLike) {
+      if (cLike.disabled) return; // 防连点：请求未结束前忽略
       const node = cLike.closest(".gb__comment");
       const c = comments.find(x => x.id === node.dataset.id);
       if (!c) return;
+      inflight++;
+      cLike.disabled = true;
       const prev = { liked: c.liked, likes: c.likes };
       c.liked = !c.liked;
       c.likes = prev.likes + (c.liked ? 1 : -1);
@@ -840,26 +868,37 @@ if (!REDUCED) {
         c.liked = Boolean(d.liked); c.likes = d.likes | 0;
         cLike.classList.toggle("is-liked", c.liked);
         cLike.textContent = `♥ ${c.likes}`;
+        saveCache();
       } catch (err) {
         c.liked = prev.liked; c.likes = prev.likes;
         cLike.classList.toggle("is-liked", c.liked);
         cLike.textContent = `♥ ${c.likes}`;
         toast(err.message || "操作失败", "error");
+      } finally {
+        inflight--;
+        cLike.disabled = false;
       }
       return;
     }
 
     if (cDel) {
+      if (cDel.disabled) return;
       const node = cDel.closest(".gb__comment");
       const id = node.dataset.id;
       if (!confirm("确定要删除这条留言吗？")) return;
+      inflight++;
+      cDel.disabled = true;
       try {
         await request(`/comment?id=${encodeURIComponent(id)}&vid=${encodeURIComponent(vid)}`, { method: "DELETE" });
         comments = comments.filter(x => x.id !== id);
         renderList();
+        saveCache();
         toast("留言已回收", "success");
       } catch (err) {
+        cDel.disabled = false;
         toast(err.message || "删除失败", "error");
+      } finally {
+        inflight--;
       }
     }
   });
@@ -877,11 +916,11 @@ if (!REDUCED) {
   }, { threshold: .15 }).observe(section);
 
   setInterval(() => {
-    if (!loaded || document.hidden) return;
+    if (!loaded || document.hidden || inflight) return;
     const r = section.getBoundingClientRect();
     if (r.top < innerHeight && r.bottom > 0) refresh(true);
   }, 45000);
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && loaded) refresh(true);
+    if (!document.hidden && loaded && !inflight) refresh(true);
   });
 })();

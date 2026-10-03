@@ -589,6 +589,42 @@ body.has-cursor .cursor-glow { opacity: 1; }
 .honor-card figcaption { padding: 11px 13px 13px; }
 .honor-card figcaption b { display: block; font-size: .93rem; line-height: 1.45; }
 .honor-card figcaption small { display: block; color: var(--muted); font-size: .76rem; margin-top: 3px; line-height: 1.5; }
+/* 市级一等奖：蓝色奖章，与国赛青紫、金银色明确区分 */
+.honor-card__medal--city {
+  background: linear-gradient(120deg, #38bdf8, #3b82f6);
+  color: #041223; box-shadow: 0 4px 14px rgba(56, 189, 248, .35);
+}
+/* 世界金奖卡：金色描边 + 悬浮辉光，全场最高规格 */
+.honor-card--world {
+  border-color: rgba(245, 158, 11, .5);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, .18), 0 12px 36px rgba(245, 158, 11, .14);
+}
+.honor-card--world::after {
+  content: "🌍"; position: absolute; right: 10px; top: 8px; z-index: 2;
+  font-size: .95rem; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .5));
+}
+/* 分类按钮数量徽标 */
+.honor-filter .filter__btn[data-count]::after {
+  content: attr(data-count);
+  display: inline-block; margin-left: 7px; padding: 0 7px;
+  border-radius: 999px; font-size: .68rem; font-style: normal; font-weight: 700;
+  line-height: 1.7; vertical-align: 1px;
+  background: rgba(255, 255, 255, .08); color: var(--muted);
+}
+.honor-filter .filter__btn.is-active[data-count]::after {
+  background: rgba(4, 6, 14, .22); color: #04060e;
+}
+/* 时间线上「进行中」的最新节点：金色脉冲圆点 */
+.timeline__item--now::before {
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 0 rgba(251, 191, 36, .55);
+  animation: nowPulse 2s ease-out infinite;
+}
+@keyframes nowPulse {
+  0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, .55); }
+  70% { box-shadow: 0 0 0 9px rgba(251, 191, 36, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+}
 
 /* ---------- 灯箱 ---------- */
 .lightbox {
@@ -739,6 +775,7 @@ body.has-cursor .cursor-glow { opacity: 1; }
   transition: color .2s, opacity .2s;
 }
 .gb__c-del:hover { color: #fb7185; opacity: 1; }
+.gb__c-like:disabled, .gb__c-del:disabled { cursor: default; opacity: .45; }
 .gb__skeleton {
   display: flex; gap: 13px; padding: 15px 17px; border-radius: 14px;
   background: var(--card); border: 1px solid var(--card-border);
