@@ -934,6 +934,7 @@ if (REDUCED) {
         renderList();
         saveCache();
       } catch (err) {
+        if (inflight || versionAtStart !== mutationVersion) return;
         let raw = null;
         try { raw = localStorage.getItem(CACHE_KEY); } catch { /* 存储不可用 */ }
         if (raw) {

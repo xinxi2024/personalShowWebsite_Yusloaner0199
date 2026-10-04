@@ -1,6 +1,6 @@
 {
   "name": "sloaner-nexus",
-  "version": "5.0.0",
+  "version": "5.0.1",
   "private": true,
   "description": "Sloaner Nexus · 精致星际科技个人作品集与 Netlify 留言板",
   "type": "module",

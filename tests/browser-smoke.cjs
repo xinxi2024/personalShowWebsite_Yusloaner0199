@@ -5,13 +5,14 @@ const base = process.env.NEXUS_TEST_URL || 'http://127.0.0.1:4173';
 (async () => {
  const browser = await chromium.launch({ headless: true });
  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
- let likes = 4, liked = false, comments = [], fail = '', reads = 0, holdNextRead = false, releaseRead = null;
+ let likes = 4, liked = false, comments = [], fail = '', reads = 0, holdNextRead = false, releaseRead = null, rejectHeldRead = false;
  await context.route('**/api/**', async route => {
    const req = route.request(), url = new URL(req.url());
    if (fail === 'all' || (fail && url.pathname.endsWith(fail))) return route.fulfill({ status: 503, json: { ok: false, error: '服务暂时不可用' } });
    if (url.pathname === '/api/state') {
      reads++; const snapshot = JSON.parse(JSON.stringify({ok:true, likes, liked, comments}));
      if (holdNextRead) { holdNextRead = false; await new Promise(resolve => { releaseRead = resolve; }); }
+     if (rejectHeldRead) { rejectHeldRead = false; return route.fulfill({status:503,json:{ok:false,error:'旧读取失败'}}); }
      return route.fulfill({json:snapshot});
    }
    if (url.pathname === '/api/like') {
@@ -86,6 +87,17 @@ const base = process.env.NEXUS_TEST_URL || 'http://127.0.0.1:4173';
  for(let n=0; reads===previousReads && n<100; n++) await new Promise(r=>setTimeout(r,10));
  await page.waitForTimeout(100);
  assert.equal(await page.locator('#likeCount').innerText(),'4');
+ // The same protection applies when an earlier read fails after a successful write.
+ holdNextRead = true;
+ await page.evaluate(()=>dispatchEvent(new Event('online')));
+ for(let n=0; !releaseRead && n<100; n++) await new Promise(r=>setTimeout(r,10));
+ assert.ok(releaseRead);
+ await page.locator('#likeBtn').click();
+ await page.waitForFunction(()=>document.getElementById('likeCount').textContent==='5' && !document.getElementById('likeBtn').classList.contains('is-busy'));
+ rejectHeldRead = true; fail = 'all'; releaseRead(); releaseRead = null;
+ await page.waitForTimeout(1100);
+ assert.equal(await page.locator('#likeCount').innerText(),'5');
+ fail = '';
  await page.locator('#gbName').fill('测试访客');
  await page.locator('#gbText').fill('作品很有趣，期待后续更新');
  await page.locator('#gbSubmit').click();
