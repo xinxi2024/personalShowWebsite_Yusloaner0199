@@ -1,10 +1,15 @@
 {
   "name": "sloaner-nexus",
-  "version": "3.0.0",
+  "version": "5.0.0",
   "private": true,
-  "description": "Sloaner Nexus 个人展示门户 · 纯静态站点 + Netlify Functions 留言板",
+  "description": "Sloaner Nexus · 精致星际科技个人作品集与 Netlify 留言板",
   "type": "module",
   "dependencies": {
     "@netlify/blobs": "^11.0.0"
+  },
+  "scripts": {
+    "check": "node --check assets/js/main.js && node --check netlify/functions/api.mjs",
+    "test": "node --test tests/project-data.test.mjs",
+    "test:browser": "node tests/browser-smoke.cjs"
   }
 }

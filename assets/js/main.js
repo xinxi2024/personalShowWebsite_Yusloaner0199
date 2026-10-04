@@ -1,4 +1,7 @@
-/* ============ Sloaner Nexus · 交互与数据 v2 ============ */
+/* ============ Sloaner Nexus · v5 ============ */
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const FINE_POINTER = matchMedia("(hover: hover) and (pointer: fine)").matches;
+let stormUntil = 0;
 
 /* ---------- 项目数据（与 md 文档同步） ---------- */
 const CATS = {
@@ -93,51 +96,132 @@ const PROJECTS = [
   { cat: "app", name: "学习复习计划管理", desc: "复习规划应用", url: "https://ysloaner-reviewplan.netlify.app/" },
 ];
 
-/* ---------- 渲染项目卡片 + 分类筛选 + 搜索 ---------- */
+/* ---------- 单一项目数据源：稳定 ID、功能简介、精选案例 ---------- */
+const DESCRIPTIONS = {
+  "Markdown 编辑器": "编写与预览 Markdown 文档。", "数据格式转换": "处理常见数据格式之间的转换。",
+  "文件格式转换": "为文件格式转换提供在线入口。", "QR 二维码生成": "将文本或链接转换为二维码。",
+  "单位转换器": "换算日常使用的计量单位。", "语言翻译器": "查询文本的语言翻译。",
+  "批量重命名": "为批量文件重命名提供工具。", "抽签器": "随机抽取结果，辅助日常决策。",
+  "批量处理图片": "集中处理多张图片。", "计时器": "为专注、活动与任务计时。",
+  "四级单词能量站": "辅助英语四级词汇学习。", "Base64 编码器": "进行 Base64 编码与解码。",
+  "多功能计算器": "完成日常计算与数值处理。", "思维导图": "以导图整理想法与知识结构。",
+  "文本对比": "对比两段文本的内容差异。", "待办事项": "记录和管理待完成的任务。",
+  "MBTI 测试": "通过问答探索性格倾向。", "IP 查询": "查询 IP 地址相关信息。",
+  "密码强度检测": "检查输入密码的强度。", "目录树生成器": "生成便于阅读的目录树结构。",
+  "ASCII 码转换": "转换字符与 ASCII 码。", "日期间隔计算": "计算两个日期之间的间隔。",
+  "密码生成器": "生成用于参考的随机密码。", "Sloaner 白板": "在在线白板记录与绘制想法。",
+  "签名生成器": "在线生成签名样式。", "BMI 计算": "依据身高体重计算 BMI。",
+  "正则表达式匹配": "尝试正则表达式与文本匹配。", "音视频播放器": "播放音频与视频文件。",
+  "时间戳转换器": "在时间戳与日期时间之间转换。", "语音转文本": "将语音内容转换为文本。",
+  "文本转语音": "把文字转换为语音。", "扫雷": "根据数字线索推理并避开地雷。",
+  "2048": "滑动合并数字，向 2048 挑战。", "迷宫": "探索路径，找到迷宫出口。",
+  "俄罗斯方块": "旋转和排列方块，消除完整行。", "贪吃蛇": "控制移动方向，挑战更长的蛇身。",
+  "数字华容道": "移动数字方块，还原正确顺序。", "数独": "利用行、列与宫的约束填写数字。",
+  "蜘蛛牌": "整理纸牌，完成同花色排列。", "五子棋": "在棋盘上争取五子连线。",
+  "中国象棋": "体验传统象棋的布局与对弈。", "打砖块": "控制挡板反弹小球，击破砖块。",
+  "打地鼠": "快速点击目标，挑战反应速度。", "记忆卡片": "翻开并配对卡片，训练记忆。",
+  "点点连线": "连接点位，完成连线挑战。", "推箱子": "规划移动，将箱子推到目标位置。",
+  "Colorful 消消乐": "交换彩色方块，挑战三消玩法。", "太空战机": "驾驶战机，躲避攻击并迎战敌人。",
+  "3D 跑酷": "在三维场景中奔跑与躲避障碍。", "3D 跳一跳": "控制跳跃，跨越不同平台。",
+  "像素鸟": "控制飞行高度，穿过障碍。", "圣诞老人过悬崖": "帮助圣诞老人跨越悬崖。",
+  "Sloaner 钢琴": "在浏览器中体验钢琴弹奏。", "粒子交互": "用指针探索粒子的视觉变化。",
+  "井字棋": "在九宫格中争取三子连线。", "24 点": "用四个数字与运算符计算 24。",
+  "投掷飞镖": "瞄准靶盘，挑战投掷精度。", "恐龙快跑": "跳跃躲避障碍，挑战跑酷距离。",
+  "围棋": "在棋盘上探索围地与对弈。", "国际象棋": "体验国际象棋的走子与策略。",
+  "涂鸦板": "自由绘制，记录涂鸦与想法。",
+  "人生重开模拟器": "选择初始条件，体验模拟人生。", "围住小偷": "布置障碍，尝试围住移动的目标。",
+  "个人博客": "记录学习、开发与项目复盘。", "智绘大数据": "以可视化方式呈现数据。",
+  "Sloaner 天气网": "查询与查看气象数据。", "答案之书": "获得一段问答灵感。",
+  "亲戚称呼换算": "按亲属关系换算称呼。", "共青团问答系统": "围绕共青团知识进行问答。",
+  "共青团问卷系统": "提供共青团相关问卷入口。", "艾宾浩斯复习页码生成": "依据记忆曲线生成复习页码安排。",
+  "学习复习计划管理": "整理学习任务与复习规划。",
+};
+const CASES = {
+  "Sloaner 百宝箱 · 总集成": { label: "TOOL COLLECTION", title: "Sloaner 百宝箱", mark: "31", subtitle: "让日常任务，少一些重复。", cover: "assets/projects/treasure.webp", problem: "常用的小工具分散在不同入口，查找与切换增加了操作步骤。", features: "集合 31 款效率工具，覆盖 Markdown、格式转换、二维码、文本处理与日常计算。", approach: "以总入口连接独立部署的工具，把不同场景集中到同一系列；各工具仍可独立访问。", tags: ["效率工具", "系列集成", "31 款工具"] },
+  "YuSloane 游戏帝国 · 总集成": { label: "GAME COLLECTION", title: "YuSloane 游戏帝国", mark: "32", subtitle: "把熟悉的游戏，写成自己的作品。", cover: "assets/projects/games.webp", problem: "通过可体验的小游戏练习规则拆解、逻辑实现与界面交互。", features: "集合 32 款游戏，包括扫雷、2048、迷宫、俄罗斯方块与棋类游戏。", approach: "以游戏系列入口组织独立作品，从各自的规则与交互出发进行开发与部署。", tags: ["游戏逻辑", "交互实践", "32 款游戏"] },
+  "智绘大数据": { label: "DATA VISUALIZATION", title: "智绘大数据", mark: "DATA", subtitle: "让数据，有可读的表达。", cover: "assets/projects/data.webp", problem: "探索如何把数据转化为便于理解的可视化表达。", features: "电商数据可视化大屏，展示数据总览、省份分布、价格分布、全国热榜与店铺销售排行。", approach: "围绕商品、价格与地域等维度组织数据，在同一个大屏里组合表格与图表，让不同维度可以对照查看。", tags: ["数据应用", "可视化", "在线平台"] },
+  "艾宾浩斯复习页码生成": { label: "LEARNING TOOL", title: "艾宾浩斯复习工具", mark: "RECALL", subtitle: "给重复学习，一个清晰的节奏。", cover: "assets/projects/recall.webp", problem: "把复习节奏转化为具体的页码安排，减少手动规划的重复工作。", features: "输入今天学习的页码范围，按 1 / 2 / 4 / 7 / 15 / 30 天间隔计算今日复习内容，并合并去重。", approach: "默认每天连续学习 2 页，依据当天页码推算历史学习内容，再按复习间隔汇总今天需要重温的页码。", tags: ["学习规划", "记忆曲线", "效率工具"] },
+};
+PROJECTS.forEach(p => {
+  p.id = new URL(p.url).hostname.replace(/\.(netlify\.app|onrender\.com|vercel\.app|wuaze\.com)$/, "");
+  p.desc = DESCRIPTIONS[p.name] || p.desc || (p.cat === "game" ? `体验${p.name}的玩法与交互。` : `${p.name}的在线工具入口。`);
+  p.featured = Boolean(CASES[p.name]);
+  p.case = CASES[p.name] || null;
+  p.cover = p.case?.cover || null;
+});
+const escapeHTML = value => String(value).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const icons = {
+  tool: '<rect x="4" y="7" width="16" height="13" rx="3"/><path d="M9 7V4h6v3M4 12h16M10 12v3h4v-3"/>',
+  game: '<rect x="2" y="6" width="20" height="13" rx="5"/><path d="M6 12h6M9 9v6M16 11h.01M19 14h.01"/>',
+  app: '<path d="M4 20h17M7 16v-5M12 16V5M17 16V8"/>',
+  hub: '<circle cx="12" cy="12" r="4"/><ellipse cx="12" cy="12" rx="11" ry="6" transform="rotate(-35 12 12)"/>',
+};
+function categoryIcon(cat) { return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">${icons[cat]}</svg>`; }
+function projectCard(p) {
+  return `<a class="project ${p.cat === "hub" ? "project--hub" : ""}" href="${escapeHTML(p.url)}" target="_blank" rel="noopener" data-project-id="${p.id}"><span class="project__arrow" aria-hidden="true">↗</span><span class="project__cat">${categoryIcon(p.cat)} ${CATS[p.cat]}</span><h4 class="project__name">${escapeHTML(p.name)}</h4><p class="project__desc">${escapeHTML(p.desc)}</p></a>`;
+}
+const singleProjects = PROJECTS.filter(p => p.cat !== "hub");
+const seriesProjects = PROJECTS.filter(p => p.cat === "hub");
+document.getElementById("statProjects").textContent = singleProjects.length;
+document.getElementById("statSeries").textContent = seriesProjects.length;
+document.getElementById("projectSummary").textContent = `${singleProjects.length} 个单品 · ${seriesProjects.length} 个系列入口`;
+document.getElementById("seriesGrid").innerHTML = seriesProjects.map(projectCard).join("");
+document.getElementById("featuredGrid").innerHTML = Object.keys(CASES).map((name, index) => {
+  const p = PROJECTS.find(p => p.name === name), c = p.case;
+  return `<article class="featured-card spot tilt" id="case-${p.id}">
+    <div class="featured-cover cover-${index}"><div class="cover-fallback"><span>${c.label}</span><strong>${c.mark}<i> /</i></strong><b>${c.title}</b><small>PROJECT ${String(index + 1).padStart(2, "0")} / SLOANER</small></div><img src="${c.cover}" alt="${c.title}真实界面预览" width="960" height="600" loading="lazy" decoding="async" /></div>
+    <div class="featured-body"><p class="eyebrow">0${index + 1} / ${c.label}</p><h3>${c.title}</h3><p class="featured-subtitle">${c.subtitle}</p><div class="project-tags">${c.tags.map(t => `<span>${t}</span>`).join("")}</div><div class="featured-actions"><a href="${p.url}" target="_blank" rel="noopener">体验作品 <span aria-hidden="true">↗</span></a></div><details class="case-details"><summary>了解作品 <span aria-hidden="true">＋</span></summary><div><h4>解决的问题</h4><p>${c.problem}</p><h4>已有功能</h4><p>${c.features}</p><h4>实现思路</h4><p>${c.approach}</p></div></details></div>
+  </article>`;
+}).join("");
+// 图片失败时保留诚实的文字封面，不展示损坏图片图标。
+document.querySelectorAll(".featured-cover img").forEach(img => {
+  img.addEventListener("error", () => { img.hidden = true; });
+});
+
+/* ---------- 单品目录：筛选、搜索与每批 12 项 ---------- */
 const grid = document.getElementById("projectsGrid");
 const emptyTip = document.getElementById("projectsEmpty");
 const searchInput = document.getElementById("searchInput");
 const searchCount = document.getElementById("searchCount");
-const CAT_ORDER = { hub: 0, tool: 1, game: 2, app: 3 };
-const CAT_ICON = { hub: "🛰️", tool: "🧰", game: "🎮", app: "📊" };
-let currentCat = "all";
-
+const moreButton = document.getElementById("loadMore");
+let currentCat = "all", visibleLimit = 12;
 function renderProjects() {
   const kw = searchInput.value.trim().toLowerCase();
-  const list = PROJECTS
-    .filter(p => (currentCat === "all" || p.cat === currentCat))
-    .filter(p => !kw || p.name.toLowerCase().includes(kw) || (p.desc || "").toLowerCase().includes(kw))
-    .sort((a, b) => CAT_ORDER[a.cat] - CAT_ORDER[b.cat]);
-
-  grid.innerHTML = list.map((p, i) => `
-    <a class="project spot tilt ${p.cat === "hub" ? "project--hub" : ""}"
-       href="${p.url}" target="_blank" rel="noopener"
-       style="animation-delay:${Math.min(i * 25, 400)}ms">
-      <span class="project__arrow">↗</span>
-      <span class="project__cat">${CAT_ICON[p.cat]} ${CATS[p.cat]}</span>
-      <div class="project__name">${p.name}</div>
-      ${p.desc ? `<div class="project__desc">${p.desc}</div>` : ""}
-    </a>`).join("");
-
+  const list = singleProjects.filter(p => currentCat === "all" || p.cat === currentCat)
+    .filter(p => !kw || `${p.name} ${p.desc}`.toLowerCase().includes(kw));
+  const shown = list.slice(0, visibleLimit);
+  grid.innerHTML = shown.map(projectCard).join("");
   emptyTip.hidden = list.length > 0;
-  searchCount.textContent = kw || currentCat !== "all" ? `${list.length} 个` : "";
+  moreButton.hidden = shown.length >= list.length;
+  searchCount.textContent = `${list.length} 项`;
+  document.getElementById("catalogProgress").textContent = `已展示 ${shown.length} / ${list.length} 个作品`;
+  document.querySelectorAll("#filter [data-cat]").forEach(btn => {
+    const active = btn.dataset.cat === currentCat;
+    btn.classList.toggle("is-active", active);
+    btn.setAttribute("aria-pressed", String(active));
+  });
 }
 renderProjects();
-
 document.getElementById("filter").addEventListener("click", e => {
-  const btn = e.target && e.target.closest && e.target.closest(".filter__btn");
+  const btn = e.target.closest("[data-cat]");
   if (!btn) return;
-  document.querySelectorAll(".filter__btn").forEach(b => b.classList.remove("is-active"));
-  btn.classList.add("is-active");
-  currentCat = btn.dataset.cat;
-  renderProjects();
+  currentCat = btn.dataset.cat; visibleLimit = 12; renderProjects();
 });
-/* 输入事件每帧最多重建一次卡片（连续打字时不再每个按键都全量重建 73 个节点） */
 let projectsQueued = false;
 searchInput.addEventListener("input", () => {
+  visibleLimit = 12;
   if (projectsQueued) return;
   projectsQueued = true;
   requestAnimationFrame(() => { projectsQueued = false; renderProjects(); });
+});
+moreButton.addEventListener("click", () => {
+  const previous = grid.children.length;
+  visibleLimit += 12; renderProjects();
+  grid.children[previous]?.focus({ preventScroll: true });
+});
+document.getElementById("clearFilters").addEventListener("click", () => {
+  searchInput.value = ""; currentCat = "all"; visibleLimit = 12;
+  renderProjects(); searchInput.focus();
 });
 
 /* ---------- 聚光灯卡片：鼠标位置追踪 ---------- */
@@ -148,32 +232,6 @@ document.addEventListener("mousemove", e => {
   card.style.setProperty("--mx", `${e.clientX - r.left}px`);
   card.style.setProperty("--my", `${e.clientY - r.top}px`);
 });
-
-/* ---------- 打字机 ---------- */
-const ROLES = [
-  "物联网工程在读 · 独立开发者",
-  "两获中等职业教育国家奖学金",
-  "事迹荣登《人民日报》2026.5.4 第 07 版",
-  "世界职业院校技能大赛 · 团体金奖",
-  "上海三校生高考总分第一",
-  "GitHub 103 仓库 · 73+ 个线上项目的创造者",
-];
-const typedEl = document.getElementById("typed");
-if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-  typedEl.textContent = ROLES[0]; // 减弱动效偏好：静态展示，不启动打字机
-} else (function typeLoop(roleIdx = 0, charIdx = 0, deleting = false) {
-  const text = ROLES[roleIdx];
-  typedEl.textContent = text.slice(0, charIdx);
-  let delay = deleting ? 34 : 82;
-  if (!deleting && charIdx === text.length) {
-    delay = 1800; deleting = true;
-  } else if (deleting && charIdx === 0) {
-    deleting = false; roleIdx = (roleIdx + 1) % ROLES.length; delay = 420;
-  } else {
-    charIdx += deleting ? -1 : 1;
-  }
-  setTimeout(() => typeLoop(roleIdx, charIdx, deleting), delay);
-})();
 
 /* ---------- 星空 Canvas：星星 + 流星 + 鼠标视差（离屏暂停） ---------- */
 const canvas = document.getElementById("stars");
@@ -225,7 +283,7 @@ function tick(t) {
 
   // 流星（彩蛋触发时进入「星陨如雨」风暴模式）
   const storming = Date.now() < stormUntil;
-  if (Math.random() < (storming ? 0.85 : 0.006) && meteors.length < (storming ? 18 : 2)) {
+  if (!REDUCED && Math.random() < (storming ? 0.85 : 0.006) && meteors.length < (storming ? 18 : 2)) {
     spawnMeteor();
     if (storming) { const m = meteors[meteors.length - 1]; m.vx *= 1.6; m.vy *= 1.6; }
   }
@@ -244,10 +302,10 @@ function tick(t) {
     ctx.stroke();
   }
 
-  rafId = heroVisible ? requestAnimationFrame(tick) : null;
+  rafId = heroVisible && !document.hidden && !REDUCED ? requestAnimationFrame(tick) : null;
 }
 resize();
-rafId = requestAnimationFrame(tick);
+tick(0);
 /* resize 防抖：拖拽窗口时避免每帧重算整屏星点 */
 let resizeT = null;
 addEventListener("resize", () => {
@@ -257,39 +315,19 @@ addEventListener("resize", () => {
 // Hero 滚出视口时暂停星空渲染，省电省性能
 new IntersectionObserver(([e]) => {
   heroVisible = e.isIntersecting;
-  if (heroVisible && rafId === null) rafId = requestAnimationFrame(tick);
+  syncStarAnimation();
 }).observe(document.getElementById("top"));
+function syncStarAnimation() {
+  const active = heroVisible && !document.hidden && !REDUCED;
+  document.getElementById("top").classList.toggle("motion-paused", !active);
+  if (!active && rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  if (active && rafId === null) rafId = requestAnimationFrame(tick);
+}
+document.addEventListener("visibilitychange", syncStarAnimation);
 addEventListener("mousemove", e => {
   mouseX = e.clientX / innerWidth;
   mouseY = e.clientY / innerHeight;
 });
-
-/* ---------- 光标辉光（顺带驱动极光鼠标视差，共用一个 rAF） ---------- */
-const glow = document.getElementById("cursorGlow");
-if (matchMedia("(hover: hover)").matches) {
-  let gx = 0, gy = 0, tx = 0, ty = 0;
-  let ntx = 0, nty = 0, ax1 = 0, ay1 = 0, ax2 = 0, ay2 = 0;
-  const aurora1 = document.querySelector(".aurora--1");
-  const aurora2 = document.querySelector(".aurora--2");
-  addEventListener("mousemove", e => {
-    tx = e.clientX; ty = e.clientY;
-    ntx = e.clientX / innerWidth - 0.5; nty = e.clientY / innerHeight - 0.5;
-    document.body.classList.add("has-cursor");
-  }, { passive: true });
-  (function follow() {
-    // 标签页隐藏时跳过样式写入，避免不可见的后台持续占用主线程
-    if (!document.hidden) {
-      gx += (tx - gx) * 0.08; gy += (ty - gy) * 0.08;
-      glow.style.left = gx + "px"; glow.style.top = gy + "px";
-      // 极光随光标缓慢漂移（独立 CSS translate 属性，与 drift 关键帧的 transform 叠加）
-      ax1 += (ntx * 34 - ax1) * 0.04; ay1 += (nty * 22 - ay1) * 0.04;
-      ax2 += (ntx * -26 - ax2) * 0.05; ay2 += (nty * -18 - ay2) * 0.05;
-      if (aurora1) aurora1.style.translate = `${ax1.toFixed(2)}px ${ay1.toFixed(2)}px`;
-      if (aurora2) aurora2.style.translate = `${ax2.toFixed(2)}px ${ay2.toFixed(2)}px`;
-    }
-    requestAnimationFrame(follow);
-  })();
-}
 
 /* ---------- 滚动：进度条 / 导航态 / 回顶按钮 ---------- */
 const nav = document.getElementById("nav");
@@ -299,41 +337,31 @@ addEventListener("scroll", () => {
   const h = document.documentElement;
   progress.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + "%";
   nav.classList.toggle("is-scrolled", scrollY > 30);
+  if (scrollY < document.getElementById("top").offsetHeight / 2) {
+    document.querySelectorAll("[data-nav]").forEach(a => { a.classList.remove("is-active"); a.removeAttribute("aria-current"); });
+  }
   toTop.classList.toggle("is-show", scrollY > 600);
 }, { passive: true });
-toTop.addEventListener("click", () => scrollTo({ top: 0, behavior: "smooth" }));
+toTop.addEventListener("click", () => scrollTo({ top: 0, behavior: REDUCED ? "auto" : "smooth" }));
 
 /* ---------- 滚动显现动画 ---------- */
 const io = new IntersectionObserver(entries => {
   entries.forEach(e => e.isIntersecting && e.target.classList.add("is-visible"));
-}, { threshold: 0.12 });
-document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+}, { threshold: 0.02 });
+document.querySelectorAll(".reveal").forEach(el => { if (REDUCED) el.classList.add("is-visible"); else io.observe(el); });
 
 /* ---------- 导航高亮当前 section ---------- */
 const navIO = new IntersectionObserver(entries => {
   entries.forEach(e => {
     if (!e.isIntersecting) return;
-    document.querySelectorAll("[data-nav]").forEach(a =>
-      a.classList.toggle("is-active", a.dataset.nav === e.target.id));
+    document.querySelectorAll("[data-nav]").forEach(a => {
+      const active = a.dataset.nav === e.target.id;
+      a.classList.toggle("is-active", active);
+      if (active) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current");
+    });
   });
 }, { rootMargin: "-40% 0px -55% 0px" });
 document.querySelectorAll(".section").forEach(s => navIO.observe(s));
-
-/* ---------- 数字滚动 ---------- */
-const counterIO = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (!e.isIntersecting) return;
-    counterIO.unobserve(e.target);
-    const target = +e.target.dataset.count;
-    const t0 = performance.now();
-    (function step(now) {
-      const k = Math.min((now - t0) / 1200, 1);
-      e.target.textContent = Math.round(target * (1 - Math.pow(1 - k, 3)));
-      if (k < 1) requestAnimationFrame(step);
-    })(t0);
-  });
-}, { threshold: 0.6 });
-document.querySelectorAll("[data-count]").forEach(el => counterIO.observe(el));
 
 /* ---------- 移动端菜单（含 Esc 关闭 + aria 状态） ---------- */
 const navToggle = document.getElementById("navToggle");
@@ -341,17 +369,15 @@ const navLinks = document.getElementById("navLinks");
 function setMenu(open) {
   navLinks.classList.toggle("is-open", open);
   navToggle.setAttribute("aria-expanded", open);
-  navToggle.textContent = open ? "✕" : "☰";
+  navToggle.innerHTML = open ? '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg>' : '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+  navToggle.setAttribute("aria-label", open ? "关闭菜单" : "打开菜单");
+  if (matchMedia("(max-width: 960px)").matches) navLinks.inert = !open;
 }
+setMenu(false);
+addEventListener("resize", () => setMenu(false));
 navToggle.addEventListener("click", () => setMenu(!navLinks.classList.contains("is-open")));
 navLinks.querySelectorAll("a").forEach(a => a.addEventListener("click", () => setMenu(false)));
-addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
-
-/* ---------- 彩蛋：切走标签页时替换标题 ---------- */
-const originalTitle = document.title;
-document.addEventListener("visibilitychange", () => {
-  document.title = document.hidden ? "🌌 星空等你回来 · Sloaner Nexus" : originalTitle;
-});
+addEventListener("keydown", e => { if (e.key === "Escape" && navLinks.classList.contains("is-open")) { setMenu(false); navToggle.focus(); } });
 
 /* ---------- 页脚年份自动更新 ---------- */
 (() => {
@@ -359,47 +385,12 @@ document.addEventListener("visibilitychange", () => {
   if (footerP) footerP.innerHTML = footerP.innerHTML.replace("© 2026", `© ${new Date().getFullYear()}`);
 })();
 
-/* ============================================================
-   v3 增强模块：开屏 / Toast / 证书墙+灯箱 / 3D倾斜 / 磁吸
-                涟漪 / 视差 / 彩蛋 / 星际留言板
-   ============================================================ */
-const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const FINE_POINTER = matchMedia("(hover: hover) and (pointer: fine)").matches;
+/* ---------- 证书预览与留言板 ---------- */
+
+
 
 /* 星空彩蛋时间窗（被上方 tick 引用） */
-let stormUntil = 0;
 
-/* ---------- 开屏加载动画 ---------- */
-(() => {
-  const pre = document.getElementById("preloader");
-  if (!pre) return;
-  if (REDUCED) { pre.remove(); return; }
-  const bar = document.getElementById("preBar");
-  const tip = document.getElementById("preTip");
-  const TIPS = ["正在校准星际坐标…", "点亮 73+ 颗项目卫星…", "给证书镀一层金光…", "预热星际留言通道…"];
-  document.body.style.overflow = "hidden";
-  const t0 = performance.now();
-  let p = 0, tipI = 0, done = false;
-  const tipTimer = setInterval(() => { tip.textContent = TIPS[++tipI % TIPS.length]; }, 520);
-  const fakeTimer = setInterval(() => {
-    p = Math.min(p + Math.random() * 15 + 7, 93);
-    bar.style.width = p + "%";
-  }, 120);
-  const finish = () => {
-    if (done) return; done = true;
-    clearInterval(fakeTimer); clearInterval(tipTimer);
-    bar.style.width = "100%";
-    setTimeout(() => {
-      pre.classList.add("is-hide");
-      document.body.style.overflow = "";
-      setTimeout(() => pre.remove(), 800);
-    }, Math.max(0, 620 - (performance.now() - t0)));
-  };
-  // load 可能在本脚本执行前就已触发（脚本被缓存时），必须先判 readyState
-  if (document.readyState === "complete") setTimeout(finish, 180);
-  else addEventListener("load", () => setTimeout(finish, 180));
-  setTimeout(finish, 2600); // 兜底：资源异常也必须放行
-})();
 
 /* ---------- Toast ---------- */
 const toastsEl = document.getElementById("toasts");
@@ -415,7 +406,7 @@ function toast(msg, type = "") {
    cat 四级：world 国际/世界级 · national 国家级 · city 省市级 · school 校级 */
 const HONORS = [
   /* 🥇 世界 / 国际级 */
-  { img: "assets/honors/world-gold-2024.jpg", title: "世界职业院校技能大赛 · 金奖", sub: "2024 总决赛争夺赛 · 电子与信息赛道二", issuer: "世界职业院校技能大赛组委会 · 2024.10", cat: "world", medal: "🥇 世界金奖", cls: "", cardCls: "honor-card--world" },
+  { img: "assets/honors/world-gold-2024.jpg", title: "世界职业院校技能大赛 · 金奖", sub: "2024 总决赛争夺赛 · 电子与信息赛道二", issuer: "世界职业院校技能大赛组委会 · 2024.10", cat: "world", medal: "世界金奖", cls: "", cardCls: "honor-card--world" },
 
   /* 🏆 国家级（5 项） */
   { img: "assets/honors/national-scholarship-2023.jpg", title: "中等职业教育国家奖学金（首次）", sub: "2023–2024 学年度", issuer: "教育部 · 人社部 · 2024.12", cat: "national", medal: "国家级", cls: "" },
@@ -441,7 +432,7 @@ function visibleHonors() {
 }
 function renderHonors() {
   honorGrid.innerHTML = visibleHonors().map((h, k) => `
-    <figure class="honor-card spot tilt ${h.cardCls || ""}" tabindex="0" role="button" data-hi="${h.i}"
+    <figure class="honor-card ${h.cardCls || ""}" tabindex="0" role="button" data-hi="${h.i}"
       style="animation-delay:${Math.min(k * 45, 460)}ms" aria-label="放大查看证书：${h.title}">
       <div class="honor-card__img">
         <img src="${h.img}" alt="${h.title}证书" loading="lazy" decoding="async" />
@@ -454,14 +445,17 @@ function renderHonors() {
 /* 分类按钮上挂数量徽标，让分级一目了然 */
 document.querySelectorAll("#honorFilter [data-hcat]").forEach(btn => {
   const c = btn.dataset.hcat;
+  btn.setAttribute("aria-pressed", String(c === "all"));
   btn.dataset.count = c === "all" ? HONORS.length : HONORS.filter(h => h.cat === c).length;
 });
+document.getElementById("statHonors").textContent = HONORS.length;
 renderHonors();
 document.getElementById("honorFilter").addEventListener("click", e => {
   const btn = e.target && e.target.closest && e.target.closest("[data-hcat]");
   if (!btn) return;
-  document.querySelectorAll("#honorFilter .filter__btn").forEach(b => b.classList.remove("is-active"));
+  document.querySelectorAll("#honorFilter .filter__btn").forEach(b => { b.classList.remove("is-active"); b.setAttribute("aria-pressed", "false"); });
   btn.classList.add("is-active");
+  btn.setAttribute("aria-pressed", "true");
   hCat = btn.dataset.hcat;
   renderHonors();
 });
@@ -561,7 +555,7 @@ if (!REDUCED && FINE_POINTER) {
     const gy = (e.clientY - r.top) / r.height;
     el.style.setProperty("--gx", (gx * 100).toFixed(1) + "%");
     el.style.setProperty("--gy", (gy * 100).toFixed(1) + "%");
-    el.style.transform = `perspective(900px) rotateX(${((.5 - gy) * 7).toFixed(2)}deg) rotateY(${((gx - .5) * 9).toFixed(2)}deg) translateY(-3px)`;
+    el.style.transform = `perspective(900px) rotateX(${((.5 - gy) * 3).toFixed(2)}deg) rotateY(${((gx - .5) * 3).toFixed(2)}deg) translateY(-3px)`;
   };
   document.addEventListener("mousemove", e => {
     tiltTarget = e.target;
@@ -583,85 +577,6 @@ if (!REDUCED && FINE_POINTER) {
   });
 }
 
-/* ---------- 磁吸按钮 ---------- */
-if (!REDUCED && FINE_POINTER) {
-  document.querySelectorAll(".magnetic").forEach(btn => {
-    btn.addEventListener("mousemove", e => {
-      const r = btn.getBoundingClientRect();
-      btn.style.translate = `${((e.clientX - r.left - r.width / 2) * .22).toFixed(1)}px ${((e.clientY - r.top - r.height / 2) * .28).toFixed(1)}px`;
-    });
-    btn.addEventListener("mouseleave", () => { btn.style.translate = ""; });
-  });
-}
-
-/* ---------- v4 星际光标：即时光点 + 弹性彗星环 + 星尘轨迹（仅桌面精细指针） ---------- */
-if (!REDUCED && FINE_POINTER) {
-  const dot = document.createElement("div");
-  const ring = document.createElement("div");
-  const trail = document.createElement("div");
-  dot.className = "cursor-dot";
-  ring.className = "cursor-ring";
-  trail.className = "cursor-trail";
-  document.body.append(trail, ring, dot);
-  document.body.classList.add("cursor-custom");
-
-  const INTERACTIVE = "a,button,input,textarea,select,label,.tilt,[role='button'],[tabindex]";
-  let mx = innerWidth / 2, my = innerHeight / 2, rx = mx, ry = my;
-  let isHover = false, isDown = false, seen = false, lastPX = mx, lastPY = my;
-  const particles = [];
-  const MAX_P = 18;
-
-  function spawnTrail(x, y) {
-    const p = document.createElement("i");
-    const ang = Math.random() * Math.PI * 2;
-    const dist = 10 + Math.random() * 16;
-    p.style.left = x + "px";
-    p.style.top = y + "px";
-    p.style.setProperty("--hue", String((175 + Math.random() * 105) | 0)); // 青→蓝→紫
-    p.style.setProperty("--tx", (Math.cos(ang) * dist).toFixed(1) + "px");
-    p.style.setProperty("--ty", (Math.sin(ang) * dist).toFixed(1) + "px");
-    trail.appendChild(p);
-    particles.push(p);
-    if (particles.length > MAX_P) particles.shift().remove(); // 粒子池硬上限，保性能
-    setTimeout(() => {
-      p.remove();
-      const i = particles.indexOf(p);
-      if (i >= 0) particles.splice(i, 1);
-    }, 720);
-  }
-
-  addEventListener("mousemove", e => {
-    mx = e.clientX; my = e.clientY;
-    if (!seen) { seen = true; document.body.classList.add("cursor-ready"); }
-    dot.classList.remove("is-hidden"); ring.classList.remove("is-hidden");
-    const over = !!(e.target && e.target.closest && e.target.closest(INTERACTIVE));
-    if (over !== isHover) {
-      isHover = over;
-      ring.classList.toggle("is-hover", over);
-      dot.classList.toggle("is-hover", over);
-    }
-    // 每移动 15px 洒落一粒星尘
-    if (Math.hypot(mx - lastPX, my - lastPY) > 15) {
-      spawnTrail(mx, my);
-      lastPX = mx; lastPY = my;
-    }
-  }, { passive: true });
-  addEventListener("mousedown", () => { isDown = true; });
-  addEventListener("mouseup", () => { isDown = false; });
-  document.addEventListener("mouseleave", () => {
-    dot.classList.add("is-hidden"); ring.classList.add("is-hidden");
-  });
-
-  (function cursorLoop() {
-    rx += (mx - rx) * 0.18; ry += (my - ry) * 0.18; // 弹性滞后，形成拖尾
-    const ds = isDown ? 1.6 : (isHover ? 0.6 : 1);
-    const rs = isDown ? 0.8 : (isHover ? 1.5 : 1);
-    dot.style.transform = `translate(${mx.toFixed(1)}px,${my.toFixed(1)}px) scale(${ds})`;
-    ring.style.transform = `translate(${rx.toFixed(1)}px,${ry.toFixed(1)}px) scale(${rs})`;
-    requestAnimationFrame(cursorLoop);
-  })();
-}
-
 /* ---------- 涟漪点击反馈 ---------- */
 if (!REDUCED) {
   document.addEventListener("pointerdown", e => {
@@ -677,17 +592,18 @@ if (!REDUCED) {
   });
 }
 
-/* ---------- Hero 滚动视差 ---------- */
-if (!REDUCED) {
-  const heroInner = document.getElementById("heroInner");
-  addEventListener("scroll", () => {
-    const y = scrollY;
-    if (y < innerHeight) {
-      heroInner.style.transform = `translateY(${y * .18}px)`;
-      heroInner.style.opacity = Math.max(0, 1 - y / 620);
-    }
-  }, { passive: true });
+/* ---------- 成长时间线：最新四项，保留完整经历 ---------- */
+const timeline = document.getElementById("honorTimeline");
+const timelineItems = [...timeline.children].reverse();
+timeline.replaceChildren(...timelineItems);
+const timelineToggle = document.getElementById("timelineToggle");
+function setTimeline(expanded) {
+  timelineItems.forEach((item, i) => { item.hidden = !expanded && i >= 4; });
+  timelineToggle.setAttribute("aria-expanded", String(expanded));
+  timelineToggle.textContent = expanded ? "收起完整经历" : `展开完整经历（${timelineItems.length} 个节点）`;
 }
+setTimeline(false);
+timelineToggle.addEventListener("click", () => setTimeline(timelineToggle.getAttribute("aria-expanded") !== "true"));
 
 /* ---------- 时间线：进入视口逐条点亮（共用一个观察器） ---------- */
 if (REDUCED) {
@@ -710,6 +626,7 @@ if (REDUCED) {
   const CODE = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
   let idx = 0;
   addEventListener("keydown", e => {
+    if (REDUCED || e.target.closest("input,textarea,select,[contenteditable]")) return;
     const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     if (k === CODE[idx]) {
       idx++;
@@ -776,8 +693,7 @@ if (REDUCED) {
   const likeBtn = document.getElementById("likeBtn");
   const likeCount = document.getElementById("likeCount");
   const likeHint = document.getElementById("likeHint");
-  const statLikes = document.getElementById("statLikes");
-  const form = document.getElementById("commentForm");
+    const form = document.getElementById("commentForm");
   const nameInput = document.getElementById("gbName");
   const textInput = document.getElementById("gbText");
   const counter = document.getElementById("gbCounter");
@@ -789,13 +705,17 @@ if (REDUCED) {
   const offline = document.createElement("div");
   offline.className = "gb__offline";
   offline.hidden = true;
-  offline.textContent = "⚠️ 星链暂时中断，当前展示的是本地缓存数据";
+  offline.textContent = "连接暂时中断，正在展示本地已有数据。";
+  const retry = document.createElement("button");
+  retry.className = "gb__retry"; retry.type = "button"; retry.textContent = "重新尝试";
+  retry.addEventListener("click", () => refresh(false));
+  offline.appendChild(retry);
   listEl.parentNode.insertBefore(offline, listEl);
 
   let likes = 0, liked = false, comments = [], loaded = false;
   /* 进行中的写操作数：轮询/切回标签页时若有写操作未完成则跳过，
      避免服务端旧状态覆盖乐观更新（旧代码存在此竞态） */
-  let inflight = 0;
+  let inflight = 0, mutationVersion = 0;
   const saveCache = () => {
     try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), likes, liked, comments })); } catch { /* 存储满或被禁 */ }
   };
@@ -825,11 +745,11 @@ if (REDUCED) {
     } finally {
       timer.cancel();
     }
-    const data = await res.json().catch(() => ({ ok: false, error: "星链响应解析失败" }));
+    const data = await res.json().catch(() => ({ ok: false, error: "响应解析失败" }));
     if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
     return data;
   }
-  const friendlyErr = err => err.message === "TIMEOUT" ? "星链响应超时，请稍后再试" : (err.message || "网络异常，请稍后再试");
+  const friendlyErr = err => err.message === "TIMEOUT" ? "请求超时，请稍后再试" : (err.message || "网络异常，请稍后再试");
 
   const hueOf = s => {
     let h = 0;
@@ -894,7 +814,7 @@ if (REDUCED) {
     return el;
   }
 
-  const EMPTY_TEXT = "🌌 这片星区还很安静 —— 写下第一条留言，成为第一颗星。";
+  const EMPTY_TEXT = "这里还很安静，欢迎留下第一条消息。";
   function showEmpty(text) {
     listEl.replaceChildren();
     const empty = document.createElement("div");
@@ -930,8 +850,8 @@ if (REDUCED) {
   /* keyed 增量渲染：新评论带动画插入，已存在的只更新数字/文案，被删的移除 */
   function renderList() {
     totalEl.textContent = comments.length
-      ? `已接收 ${comments.length} 段星际信号`
-      : "还没有留言，来发出第一段信号吧";
+      ? `${comments.length} 条留言`
+      : "还没有留言，来写下第一条吧";
     if (!comments.length) { showEmpty(EMPTY_TEXT); return; }
     if (listEl.querySelector(".gb__empty")) listEl.replaceChildren();
 
@@ -947,6 +867,7 @@ if (REDUCED) {
         listEl.insertBefore(commentNode(c), listEl.children[idx] || null);
       } else {
         updateCommentNode(node, c);
+        if (listEl.children[idx] !== node) listEl.insertBefore(node, listEl.children[idx] || null);
       }
     });
     old.forEach((node, id) => { if (!seen.has(id)) node.remove(); });
@@ -956,8 +877,7 @@ if (REDUCED) {
     likeCount.textContent = likes;
     likeBtn.classList.toggle("is-liked", liked);
     likeBtn.setAttribute("aria-pressed", String(liked));
-    likeHint.textContent = liked ? "你已点亮，与所有人一起闪耀 ✦" : "点一下，为这些作品充能";
-    if (statLikes) statLikes.textContent = likes;
+    likeHint.textContent = liked ? "感谢你的支持" : "喜欢这些作品？点一下支持我";
   }
 
   const BURST_COLORS = ["#fb7185", "#22d3ee", "#a78bfa", "#fbbf24", "#34d399"];
@@ -999,10 +919,12 @@ if (REDUCED) {
   let refreshing = null;
   function refresh(silent = false) {
     if (refreshing) return refreshing;
+    const versionAtStart = mutationVersion;
     refreshing = (async () => {
       if (!silent && !loaded) showSkeletons();
       try {
         const d = await fetchState();
+        if (inflight || versionAtStart !== mutationVersion) return;
         likes = d.likes | 0;
         liked = Boolean(d.liked);
         comments = Array.isArray(d.comments) ? d.comments : [];
@@ -1012,7 +934,8 @@ if (REDUCED) {
         renderList();
         saveCache();
       } catch (err) {
-        const raw = localStorage.getItem(CACHE_KEY);
+        let raw = null;
+        try { raw = localStorage.getItem(CACHE_KEY); } catch { /* 存储不可用 */ }
         if (raw) {
           try {
             const c = JSON.parse(raw);
@@ -1020,12 +943,13 @@ if (REDUCED) {
             paintSiteLike(); renderList();
           } catch { /* 缓存损坏则忽略 */ }
         } else if (!silent && !loaded) {
-          totalEl.textContent = "星链连接失败";
-          showEmpty("星链暂时中断，稍后刷新再试");
+          totalEl.textContent = "留言加载失败";
+          showEmpty("暂时无法加载留言，请重新尝试");
         }
         offline.hidden = false;
       } finally {
         refreshing = null;
+        if (!inflight && versionAtStart !== mutationVersion) setTimeout(() => refresh(true), 0);
       }
     })();
     return refreshing;
@@ -1034,13 +958,14 @@ if (REDUCED) {
   /* 站点点赞（乐观更新 + 失败回滚） */
   likeBtn.addEventListener("click", async () => {
     if (likeBtn.classList.contains("is-busy")) return;
+    if (!loaded) { toast("点赞数据尚未加载，请稍后重试", "error"); return; }
     likeBtn.classList.add("is-busy");
-    inflight++;
+    inflight++; mutationVersion++;
     const prevLiked = liked, prevLikes = likes;
     liked = !prevLiked;
     likes = prevLikes + (liked ? 1 : -1);
     paintSiteLike();
-    if (liked) heartBurst();
+    if (liked && !REDUCED) heartBurst();
     try {
       const d = await request("/like", { method: "POST", body: JSON.stringify({ target: "site", vid }) });
       liked = Boolean(d.liked); likes = d.likes | 0;
@@ -1051,7 +976,8 @@ if (REDUCED) {
       paintSiteLike();
       toast(err.message === "TIMEOUT" ? "点赞超时，状态稍后自动同步" : (err.message || "点赞失败，稍后再试"), "error");
     } finally {
-      inflight--;
+      inflight--; mutationVersion++;
+      if (!inflight) setTimeout(() => refresh(true), 0);
       likeBtn.classList.remove("is-busy");
     }
   });
@@ -1070,9 +996,10 @@ if (REDUCED) {
     if (bad) { toast(bad, "error"); return; }
     try { localStorage.setItem(NAME_KEY, name); } catch { /* 忽略存储异常 */ }
     submitBtn.disabled = true;
-    inflight++;
+    inflight++; mutationVersion++;
     const oldLabel = submitBtn.textContent;
-    submitBtn.textContent = "跃迁中…";
+    submitBtn.textContent = "发送中…";
+    form.setAttribute("aria-busy", "true");
     try {
       const d = await request("/comment", { method: "POST", body: JSON.stringify({ name, text, vid }) });
       comments.unshift(d.comment);
@@ -1080,12 +1007,14 @@ if (REDUCED) {
       saveCache();
       textInput.value = "";
       counter.textContent = "0 / 500";
-      toast("信号已抵达星际，感谢留言 ✦", "success");
+      toast("留言已发送，感谢交流", "success");
     } catch (err) {
       toast(friendlyErr(err), "error");
     } finally {
-      inflight--;
+      inflight--; mutationVersion++;
+      if (!inflight) setTimeout(() => refresh(true), 0);
       submitBtn.disabled = false;
+      form.setAttribute("aria-busy", "false");
       submitBtn.textContent = oldLabel;
     }
   });
@@ -1100,7 +1029,7 @@ if (REDUCED) {
       const node = cLike.closest(".gb__comment");
       const c = comments.find(x => x.id === node.dataset.id);
       if (!c) return;
-      inflight++;
+      inflight++; mutationVersion++;
       cLike.disabled = true;
       const prev = { liked: c.liked, likes: c.likes };
       c.liked = !c.liked;
@@ -1119,7 +1048,8 @@ if (REDUCED) {
         cLike.textContent = `♥ ${c.likes}`;
         toast(friendlyErr(err), "error");
       } finally {
-        inflight--;
+        inflight--; mutationVersion++;
+        if (!inflight) setTimeout(() => refresh(true), 0);
         cLike.disabled = false;
       }
       return;
@@ -1130,19 +1060,20 @@ if (REDUCED) {
       const node = cDel.closest(".gb__comment");
       const id = node.dataset.id;
       if (!confirm("确定要删除这条留言吗？")) return;
-      inflight++;
+      inflight++; mutationVersion++;
       cDel.disabled = true;
       try {
         await request(`/comment?id=${encodeURIComponent(id)}&vid=${encodeURIComponent(vid)}`, { method: "DELETE" });
         comments = comments.filter(x => x.id !== id);
         renderList();
         saveCache();
-        toast("留言已回收", "success");
+        toast("留言已删除", "success");
       } catch (err) {
         cDel.disabled = false;
         toast(friendlyErr(err), "error");
       } finally {
-        inflight--;
+        inflight--; mutationVersion++;
+        if (!inflight) setTimeout(() => refresh(true), 0);
       }
     }
   });

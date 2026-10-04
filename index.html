@@ -5,16 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sloaner Nexus · 俞顺利的数字枢纽</title>
   <meta name="description" content="俞顺利（YuSloane）的个人展示网站：物联网工程在读，独立开发者。聚合 Sloaner 百宝箱、YuSloane 游戏帝国与数据应用项目，含荣誉证书墙与星际留言板。" />
-  <meta name="theme-color" content="#04060e" />
+  <meta name="theme-color" content="#070b14" />
   <meta name="color-scheme" content="dark" />
   <meta property="og:title" content="Sloaner Nexus · 俞顺利的数字枢纽" />
-  <meta property="og:description" content="物联网工程在读 · 独立开发者 · 73+ 个线上项目" />
+  <meta property="og:description" content="物联网工程在读 · 独立开发者 · 72 个作品 · 3 个系列入口" />
   <meta property="og:type" content="website" />
-  <meta property="og:image" content="tx.jpg" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E%F0%9F%9B%B0%EF%B8%8F%3C/text%3E%3C/svg%3E" />
+  <meta property="og:image" content="https://sloanershow.netlify.app/assets/brand/social-cover.png" />
+  <link rel="icon" type="image/svg+xml" href="assets/brand/favicon.svg" />
+  <meta property="og:url" content="https://sloanershow.netlify.app/" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <link rel="canonical" href="https://sloanershow.netlify.app/" />
+  <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/style.css?v=4" />
+  <link rel="stylesheet" href="assets/css/style.css?v=5" />
   <script>
     /* 预先替每位访客完成 Netlify 官方提供的「Hide this badge」操作：
        Netlify 注入的 HUD 脚本启动时读取此 localStorage 键，值为 hidden 即不渲染右下角角标
@@ -23,30 +28,22 @@
   </script>
 </head>
 <body>
-  <!-- ===== 开屏加载 ===== -->
-  <div class="preloader" id="preloader">
-    <div class="preloader__orbit"><i></i><i></i><i></i></div>
-    <div class="preloader__logo">SLOANER<span>NEXUS</span></div>
-    <div class="preloader__bar"><i id="preBar"></i></div>
-    <p class="preloader__tip" id="preTip">正在校准星际坐标…</p>
-  </div>
-
-  <!-- 滚动进度条 & 光标辉光 & 噪点 -->
+  <a class="skip-link" href="#featured">跳到精选作品</a>
+  <!-- 浏览进度与纹理 -->
   <div class="progress" id="progress"></div>
-  <div class="cursor-glow" id="cursorGlow"></div>
   <div class="grain" aria-hidden="true"></div>
 
   <!-- ===== 导航 ===== -->
   <nav class="nav" id="nav">
     <a class="nav__logo" href="#top">Sloaner<span>Nexus</span></a>
-    <button class="nav__toggle" id="navToggle" aria-label="菜单" aria-expanded="false">☰</button>
+    <button class="nav__toggle" id="navToggle" aria-label="打开菜单" aria-expanded="false" aria-controls="navLinks"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
     <ul class="nav__links" id="navLinks">
+      <li><a href="#featured" data-nav="featured">精选作品</a></li>
       <li><a href="#about" data-nav="about">关于我</a></li>
+      <li><a href="#projects" data-nav="projects">项目库</a></li>
       <li><a href="#honors" data-nav="honors">荣誉</a></li>
-      <li><a href="#projects" data-nav="projects">项目宇宙</a></li>
-      <li><a href="#skills" data-nav="skills">技能栈</a></li>
-      <li><a href="#guestbook" data-nav="guestbook">留言板</a></li>
-      <li><a class="nav__cta" href="https://github.com/xinxi2024" target="_blank" rel="noopener">GitHub</a></li>
+      <li><a href="#skills" data-nav="skills">技能</a></li>
+      <li><a class="nav__cta" href="#guestbook" data-nav="guestbook">联系我 ↗</a></li>
     </ul>
   </nav>
 
@@ -56,169 +53,174 @@
     <div class="aurora aurora--1"></div>
     <div class="aurora aurora--2"></div>
     <div class="hero__inner" id="heroInner">
-      <div class="hero__avatar-ring">
-        <img class="hero__avatar" src="tx.jpg" alt="YuSloane 头像" fetchpriority="high" width="148" height="148" />
+      <div class="hero__copy">
+        <p class="eyebrow"><span class="status-dot"></span> SLOANER NEXUS / PERSONAL SPACE</p>
+        <p class="hero__hello">你好，我是</p>
+        <h1 class="hero__name">俞顺利<span class="hero__en">YuSloane<span class="accent">.</span></span></h1>
+        <p class="hero__typed"><span id="typed">物联网工程在读 · 独立开发者</span></p>
+        <p class="hero__intro">把想法写成代码，<br>让代码成为真正可用的作品。</p>
+        <div class="hero__btns">
+          <a class="btn btn--primary" href="#featured">探索精选作品 <span aria-hidden="true">↗</span></a>
+          <a class="btn btn--ghost" href="https://github.com/xinxi2024" target="_blank" rel="noopener">GitHub <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="hero__stats" aria-label="作品与荣誉统计">
+          <div><b id="statProjects">72</b><i>独立作品</i></div>
+          <div><b id="statSeries">3</b><i>系列入口</i></div>
+          <div><b id="statHonors">10</b><i>荣誉证书</i></div>
+        </div>
       </div>
-      <p class="hero__hello">HELLO, I'M</p>
-      <h1 class="hero__name">俞顺利<span class="hero__en">YuSloane</span></h1>
-      <p class="hero__typed"><span id="typed"></span><span class="caret"></span></p>
-      <div class="hero__tags">
-        <span>务实</span><span>独立开发者</span><span>持续迭代</span><span>以技立身 · 以德立行</span>
-      </div>
-      <div class="hero__btns">
-        <a class="btn btn--primary magnetic ripple" href="#projects">进入项目宇宙</a>
-        <a class="btn btn--ghost magnetic ripple" href="https://github.com/xinxi2024" target="_blank" rel="noopener">
-          <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor" style="vertical-align:-2px;margin-right:6px"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
-          @xinxi2024
-        </a>
-      </div>
-      <div class="hero__stats">
-        <div><b data-count="31">0</b><i>效率工具</i></div>
-        <div><b data-count="32">0</b><i>经典游戏</i></div>
-        <div><b data-count="9">0</b><i>数据应用</i></div>
-        <div><b data-count="103">0</b><i>GitHub 仓库</i></div>
-        <div><b data-count="10">0</b><i>荣誉证书</i></div>
-        <div><b id="statLikes">·</b><i>访客点赞</i></div>
+      <div class="hero__visual">
+        <div class="orbit orbit--outer" aria-hidden="true"><i></i></div>
+        <div class="orbit orbit--inner" aria-hidden="true"><i></i></div>
+        <div class="hero__portrait"><img src="tx.jpg" alt="俞顺利的头像" fetchpriority="high" width="320" height="320" /></div>
+        <div class="orbit-label orbit-label--top">01 / BUILD WITH PURPOSE</div>
+        <div class="portrait-caption"><span class="status-dot"></span> 从工具、游戏，到物联网探索<br><small>SHANGHAI · DEVELOPER & EXPLORER</small></div>
+        <div class="orbit-label orbit-label--bottom">IDEAS → CODE → REALITY</div>
       </div>
     </div>
-    <a class="hero__scroll" href="#about"><span></span></a>
+    <a class="hero__scroll" href="#featured" aria-label="向下浏览精选作品"><span></span></a>
   </header>
 
   <main>
-    <!-- ===== 关于我 ===== -->
+    <section class="section reveal" id="featured">
+      <div class="section-head"><p class="eyebrow">01 / SELECTED WORK</p><h2 class="section__title">让想法落地的作品<span class="accent">.</span></h2><p class="section__desc">从日常效率到游戏逻辑，从数据呈现到学习规划。四个入口，认识我的开发实践。</p></div>
+      <div class="featured-grid" id="featuredGrid"></div>
+      <noscript><p>精选作品与全部系列入口可通过页脚链接访问。</p></noscript>
+    </section>
+
     <section class="section reveal" id="about">
-      <h2 class="section__title"><em>01</em>关于我</h2>
-      <blockquote class="about__quote">
-        物联网工程在读，热爱用代码解决实际问题，独立开发者。倾向于用工程化思维拆解复杂问题，习惯把杂乱的信息整理成可执行的清单。对技术创造有持续的驱动力，相信「做出东西」比「谈论想法」更有价值。
-      </blockquote>
+      <div class="section-head"><p class="eyebrow">02 / THE PERSON BEHIND THE CODE</p><h2 class="section__title">关于我<span class="accent">.</span></h2></div>
+      <blockquote class="about__quote">做出东西，比谈论想法更有价值。</blockquote>
+      <p class="section__desc">物联网工程在读，独立开发者。用工程化思维拆解问题，把杂乱的信息整理成可执行的清单，再用代码把它们变成作品。</p>
       <div class="about__grid">
-        <div class="about__card spot tilt"><b>🎓 院校</b><p>上海商学院 · 物联网工程（2026级）<br/>班长兼副团支书</p></div>
-        <div class="about__card spot tilt"><b>🚀 路径</b><p>上海信息技术学校 软件与信息服务<br/>→ 三校生高考总分第一（257/300）考入</p></div>
-        <div class="about__card spot tilt"><b>🧭 方向</b><p>数据分析 · 嵌入式开发基础 · 物联网应用</p></div>
-        <div class="about__card spot tilt"><b>🧠 特质</b><p>INTJ / ENTJ 倾向：目标导向、高自主性、结构化输出</p></div>
+        <article class="about__card"><span class="card-index">01 / EDUCATION</span><h3>教育与成长</h3><p>上海商学院 · 物联网工程（2026 级）<br>班长兼副团支书</p><small>上海信息技术学校 → 上海商学院</small></article>
+        <article class="about__card"><span class="card-index">02 / DIRECTION</span><h3>开发方向</h3><p>数据分析与可视化<br>实用工具、游戏与物联网应用</p><small>从具体需求出发，持续打磨体验</small></article>
+        <article class="about__card"><span class="card-index">03 / APPROACH</span><h3>做事方式</h3><p>目标导向，习惯结构化输出<br>重视项目实践、记录与复盘</p><small>务实 · 自主学习 · 持续迭代</small></article>
       </div>
+      <div class="current-focus"><span class="status-dot"></span><div><b>目前关注</b><p>探索 TinyClimate 物联网项目、数据应用，持续完善 Sloaner 系列项目库。</p></div><span class="card-index">NOW / 2026.10</span></div>
     </section>
 
-    <!-- ===== 荣誉时刻 ===== -->
-    <section class="section reveal" id="honors">
-      <h2 class="section__title"><em>02</em>荣誉时刻</h2>
-      <p class="section__desc">从校级奖学金到世界舞台金奖 —— 时间线记录每一步，证书陈列馆可按获奖等级查阅原件。</p>
-      <div class="timeline">
-        <div class="timeline__item">
-          <span class="timeline__year">2022.09</span>
-          <div class="spot timeline__body tilt"><b>入学上海信息技术学校</b><p>软件与信息服务专业，技能竞赛路线的起点</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2024.05</span>
-          <div class="spot timeline__body tilt"><b>校特等奖学金 &amp; 校优秀学生干部（双奖）</b><p>2023–2024 学年第一学期，学业与班级工作同时获校级认可</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2024.06</span>
-          <div class="spot timeline__body tilt"><b>全国职业院校技能大赛上海选拔赛 · 二等奖</b><p>中职组 · 大数据应用与服务赛项，拿到国赛入场券</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2024.10</span>
-          <div class="spot timeline__body tilt"><b>世界职业院校技能大赛 · 团体金奖 🥇</b><p>2024 总决赛争夺赛 · 电子与信息赛道二（证书编号 WVCSC-G2024105200601）</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2024.11</span>
-          <div class="spot timeline__body tilt"><b>CCF 全国中职信息技术应用能力大赛 · 一等奖</b><p>中国计算机学会 CCF-SVC 决赛 · 大数据应用与服务项目</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2024.12</span>
-          <div class="spot timeline__body tilt"><b>中等职业教育国家奖学金（首次）</b><p>2023–2024 学年度获奖，全国约 2 万名中职获奖学生之一</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2025.06</span>
-          <div class="spot timeline__body tilt"><b>上海市「星光计划」技能大赛 · 一等奖</b><p>第十一届 · 大数据集群与运维搭建项目（上海市教委等四委办局盖章）</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2025.11</span>
-          <div class="spot timeline__body tilt"><b>CCF 全国中职信息技术应用能力大赛 · 再度一等奖</b><p>2025 决赛 · 大数据应用与 AI 服务赛道，连续两年国赛夺魁</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2025.12</span>
-          <div class="spot timeline__body tilt"><b>中等职业教育国家奖学金（梅开二度）</b><p>2024–2025 学年度再次获奖，入选全国 100 名优秀代表名录（上海市仅 2 名中职学生）</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2026.05</span>
-          <div class="spot timeline__body tilt"><b>事迹荣登《人民日报》</b><p>2026 年 5 月 4 日第 07 版专版刊登国奖优秀代表事迹</p></div>
-        </div>
-        <div class="timeline__item">
-          <span class="timeline__year">2026.06</span>
-          <div class="spot timeline__body tilt"><b>上海三校生高考 · 总分第一 &amp; 数学单科第一</b><p>总分 257/300（语文 77 · 数学 93 · 英语 87），考入上海商学院物联网工程专业</p></div>
-        </div>
-        <div class="timeline__item timeline__item--now">
-          <span class="timeline__year">2026.09</span>
-          <div class="spot timeline__body tilt"><b>进入上海商学院 · 班长兼副团支书</b><p>物联网工程专业 2026 级，新赛道启航</p></div>
-        </div>
-        <div class="timeline__item timeline__item--now">
-          <span class="timeline__year">2026.10</span>
-          <div class="spot timeline__body tilt"><b>「知行杯」全国大学生社会实践大赛 · 全国一等奖</b><p>大一上学期 · 科普知识赛道（编号 ZXB20261001FX9pn），大学开局首冠</p></div>
-        </div>
-      </div>
-
-      <!-- 证书墙 -->
-      <h3 class="honor-wall__title"><span>🏅 证书陈列馆</span><small>点击证书可放大查看</small></h3>
-      <div class="filter honor-filter" id="honorFilter">
-        <button class="filter__btn is-active" data-hcat="all">全部</button>
-        <button class="filter__btn" data-hcat="world">🥇 世界 / 国际</button>
-        <button class="filter__btn" data-hcat="national">🏆 国家级</button>
-        <button class="filter__btn" data-hcat="city">🌆 省 / 市级</button>
-        <button class="filter__btn" data-hcat="school">🏫 校级</button>
-      </div>
-      <div class="honor-grid" id="honorGrid"></div>
-    </section>
-
-    <!-- ===== 项目宇宙 ===== -->
     <section class="section reveal" id="projects">
-      <h2 class="section__title"><em>03</em>项目宇宙</h2>
-      <p class="section__desc">73+ 个独立开发并部署的线上作品，按星系分类。点击任意卡片即可访问。</p>
+      <p class="eyebrow">03 / PROJECT UNIVERSE</p><h2 class="section__title">完整项目库<span class="accent">.</span></h2>
+      <p class="section__desc"><span id="projectSummary">72 个单品 · 3 个系列入口</span>。找到一个感兴趣的作品，打开体验。</p>
+      <h3 class="subheading">系列入口 <span>THE COLLECTIONS</span></h3>
+      <div class="series-grid" id="seriesGrid"></div>
+      <h3 class="subheading">作品目录 <span>EXPLORE THE PROJECTS</span></h3>
       <div class="projects__bar">
         <div class="filter" id="filter">
           <button class="filter__btn is-active" data-cat="all">全部</button>
-          <button class="filter__btn" data-cat="tool">🧰 效率工具</button>
-          <button class="filter__btn" data-cat="game">🎮 经典游戏</button>
-          <button class="filter__btn" data-cat="app">📊 数据应用</button>
-          <button class="filter__btn" data-cat="hub">🛰️ 星际集成</button>
+          <button class="filter__btn" data-cat="tool">效率工具</button>
+          <button class="filter__btn" data-cat="game">经典游戏</button>
+          <button class="filter__btn" data-cat="app">数据应用</button>
         </div>
         <div class="search">
-          <input type="search" id="searchInput" placeholder="🔍 搜索项目，如：扫雷 / 二维码" autocomplete="off" />
+          <label class="sr-only" for="searchInput">搜索项目</label>
+          <input type="search" id="searchInput" placeholder="搜索名称或功能…" autocomplete="off" />
           <span class="search__count" id="searchCount"></span>
         </div>
       </div>
       <div class="projects" id="projectsGrid"></div>
-      <p class="projects__empty" id="projectsEmpty" hidden>没有匹配的项目，换个关键词试试 🌌</p>
+      <div class="projects__empty" id="projectsEmpty" hidden><p>没有匹配的作品，试试其他关键词。</p><button class="btn btn--ghost" id="clearFilters" type="button">清空筛选</button></div>
+      <div class="catalog-footer"><span id="catalogProgress" role="status"></span><button class="btn btn--ghost" id="loadMore" type="button">加载更多作品</button></div>
       <noscript><p class="projects__empty">当前浏览器未启用 JavaScript，项目列表无法加载。各系列总入口：百宝箱 / 游戏帝国 / 智启星际，见页面底部链接。</p></noscript>
     </section>
 
-    <!-- ===== 技能栈 ===== -->
-    <section class="section reveal" id="skills">
-      <h2 class="section__title"><em>04</em>技能栈</h2>
-      <div class="skills">
-        <div class="skills__group spot skills__group--wide tilt">
-          <b>编程语言 <small>· 按 GitHub 103 个仓库真实占比</small></b>
-          <div class="skill-bars">
-            <div class="skill-bar"><span>Python<em>熟练 · 24 仓库</em></span><div class="skill-bar__track"><i style="--w:88%"></i></div></div>
-            <div class="skill-bar"><span>JavaScript<em>项目实践 · 34 仓库</em></span><div class="skill-bar__track"><i style="--w:80%"></i></div></div>
-            <div class="skill-bar"><span>HTML / CSS<em>项目实践 · 30 仓库</em></span><div class="skill-bar__track"><i style="--w:76%"></i></div></div>
-            <div class="skill-bar"><span>TypeScript<em>入门 · 7 仓库</em></span><div class="skill-bar__track"><i style="--w:42%"></i></div></div>
-            <div class="skill-bar"><span>C<em>入门 · 课程攻坚中</em></span><div class="skill-bar__track"><i style="--w:30%"></i></div></div>
-            <div class="skill-bar"><span>Vue / Go<em>了解 · 有项目试水</em></span><div class="skill-bar__track"><i style="--w:20%"></i></div></div>
-          </div>
-        </div>
-        <div class="skills__group spot tilt"><b>开发工具</b><div><span>Git</span><span>Netlify</span><span>Render</span><span>Vercel</span><span>VS Code</span></div></div>
-        <div class="skills__group spot tilt"><b>专业方向</b><div><span>数据分析</span><span>嵌入式开发基础</span><span>物联网应用</span></div></div>
-        <div class="skills__group spot tilt"><b>软实力</b><div><span>技术写作</span><span>项目复盘</span><span>信息整合</span><span>结构化文档</span></div></div>
+    <section class="section reveal" id="honors">
+      <p class="eyebrow">04 / MILESTONES</p><h2 class="section__title">每一步，都有回响<span class="accent">.</span></h2>
+      <p class="section__desc">从校级奖学金到世界舞台金奖 —— 时间线记录每一步，证书陈列馆可按获奖等级查阅原件。</p>
+      <div class="honor-highlights">
+        <article><span>WORLD / 2024</span><h3>世界赛团体金奖</h3><p>世界职业院校技能大赛<br>电子与信息赛道二</p></article>
+        <article><span>NATIONAL / 2023—2025</span><h3>两次国家奖学金</h3><p>中等职业教育国家奖学金<br>第二次入选全国优秀代表</p></article>
+        <article><span>CCF / 2024 · 2025</span><h3>两届全国一等奖</h3><p>全国中职信息技术应用能力大赛<br>大数据应用与 AI 服务实践</p></article>
       </div>
+      <h3 class="subheading">成长时间线 <span>THE JOURNEY</span></h3>
+      <div class="timeline" id="honorTimeline">
+        <div class="timeline__item">
+          <span class="timeline__year">2022.09</span>
+          <div class="timeline__body"><b>入学上海信息技术学校</b><p>软件与信息服务专业，技能竞赛路线的起点</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2024.05</span>
+          <div class="timeline__body"><b>校特等奖学金 &amp; 校优秀学生干部（双奖）</b><p>2023–2024 学年第一学期，学业与班级工作同时获校级认可</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2024.06</span>
+          <div class="timeline__body"><b>全国职业院校技能大赛上海选拔赛 · 二等奖</b><p>中职组 · 大数据应用与服务赛项，拿到国赛入场券</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2024.10</span>
+          <div class="timeline__body"><b>世界职业院校技能大赛 · 团体金奖</b><p>2024 总决赛争夺赛 · 电子与信息赛道二（证书编号 WVCSC-G2024105200601）</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2024.11</span>
+          <div class="timeline__body"><b>CCF 全国中职信息技术应用能力大赛 · 一等奖</b><p>中国计算机学会 CCF-SVC 决赛 · 大数据应用与服务项目</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2024.12</span>
+          <div class="timeline__body"><b>中等职业教育国家奖学金（首次）</b><p>2023–2024 学年度获奖，全国约 2 万名中职获奖学生之一</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2025.06</span>
+          <div class="timeline__body"><b>上海市「星光计划」技能大赛 · 一等奖</b><p>第十一届 · 大数据集群与运维搭建项目（上海市教委等四委办局盖章）</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2025.11</span>
+          <div class="timeline__body"><b>CCF 全国中职信息技术应用能力大赛 · 再度一等奖</b><p>2025 决赛 · 大数据应用与 AI 服务赛道，连续两年国赛夺魁</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2025.12</span>
+          <div class="timeline__body"><b>中等职业教育国家奖学金（梅开二度）</b><p>2024–2025 学年度再次获奖，入选全国 100 名优秀代表名录（上海市仅 2 名中职学生）</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2026.05</span>
+          <div class="timeline__body"><b>事迹荣登《人民日报》</b><p>2026 年 5 月 4 日第 07 版专版刊登国奖优秀代表事迹</p></div>
+        </div>
+        <div class="timeline__item">
+          <span class="timeline__year">2026.06</span>
+          <div class="timeline__body"><b>上海三校生高考 · 总分第一 &amp; 数学单科第一</b><p>总分 257/300（语文 77 · 数学 93 · 英语 87），考入上海商学院物联网工程专业</p></div>
+        </div>
+        <div class="timeline__item timeline__item--now">
+          <span class="timeline__year">2026.09</span>
+          <div class="timeline__body"><b>进入上海商学院 · 班长兼副团支书</b><p>物联网工程专业 2026 级，新赛道启航</p></div>
+        </div>
+        <div class="timeline__item timeline__item--now">
+          <span class="timeline__year">2026.10</span>
+          <div class="timeline__body"><b>「知行杯」全国大学生社会实践大赛 · 全国一等奖</b><p>大一上学期 · 科普知识赛道（编号 ZXB20261001FX9pn），大学开局首冠</p></div>
+        </div>
+      </div>
+
+      <button class="btn btn--ghost timeline-toggle" id="timelineToggle" type="button" aria-expanded="false" aria-controls="honorTimeline">展开完整经历</button>
+
+      <!-- 证书墙 -->
+      <h3 class="honor-wall__title"><span>证书陈列馆</span><small>点击证书可放大查看</small></h3>
+      <div class="filter honor-filter" id="honorFilter">
+        <button class="filter__btn is-active" data-hcat="all">全部</button>
+        <button class="filter__btn" data-hcat="world">世界 / 国际</button>
+        <button class="filter__btn" data-hcat="national">国家级</button>
+        <button class="filter__btn" data-hcat="city">省 / 市级</button>
+        <button class="filter__btn" data-hcat="school">校级</button>
+      </div>
+      <div class="honor-grid" id="honorGrid"></div>
     </section>
 
-    <!-- ===== 星际留言板 ===== -->
+    <section class="section reveal" id="skills">
+      <p class="eyebrow">05 / SKILLS IN PRACTICE</p><h2 class="section__title">技能，来自实践<span class="accent">.</span></h2>
+      <p class="section__desc">用具体作品说明能力，用持续学习拓展边界。</p>
+      <div class="ability-grid">
+        <article class="ability"><span class="card-index">BUILD / 前端项目实践</span><h3>HTML · CSS · JavaScript</h3><p>网页结构、界面交互与游戏逻辑的项目实践。</p><a href="#projects">对应作品：百宝箱、游戏帝国 ↗</a></article>
+        <article class="ability"><span class="card-index">EXPLORE / 数据方向</span><h3>Python · 数据分析</h3><p>具备数据处理与脚本开发能力，关注数据可视化应用。</p><a href="https://ysloaner-spbd.onrender.com/" target="_blank" rel="noopener">关注方向：智绘大数据 ↗</a></article>
+        <article class="ability"><span class="card-index">SHIP / 部署实践</span><h3>Git · Netlify · Render</h3><p>将个人作品部署到线上，持续维护与迭代。</p><a href="#featured">对应作品：四个精选作品 ↗</a></article>
+        <article class="ability"><span class="card-index">LEARN / 正在学习</span><h3>C · TypeScript · 物联网</h3><p>C 与 TypeScript 处于入门阶段，学习嵌入式基础与物联网应用。</p><a href="#about">当前探索：TinyClimate 物联网项目 ↗</a></article>
+      </div>
+      <div class="skills-note">也重视技术写作、项目复盘与结构化文档，让每次实践都留下可以复用的经验。</div>
+    </section>
+
     <section class="section reveal" id="guestbook">
-      <h2 class="section__title"><em>05</em>星际留言板</h2>
-      <p class="section__desc">点亮一颗星，或留下一段跨星际信号 —— 点赞与留言实时同步到云端，所有人可见。</p>
+      <p class="eyebrow">06 / LET’S CONNECT</p><h2 class="section__title">让交流发生<span class="accent">.</span></h2>
+      <p class="section__desc">欢迎聊聊项目、技术或一个新的想法。你可以在 GitHub 找到我，也可以在这里留下一条消息。</p>
+      <div class="contact-strip"><a class="btn btn--ghost" href="https://github.com/xinxi2024" target="_blank" rel="noopener">GitHub / @xinxi2024 ↗</a><a class="btn btn--ghost" href="#commentForm">写一条留言 ↓</a></div>
       <div class="gb">
-        <div class="gb__like-card spot tilt">
+        <div class="gb__like-card">
           <button class="gb__heart" id="likeBtn" type="button" aria-pressed="false" aria-label="为 Sloaner Nexus 点赞">
             <svg viewBox="0 0 24 24" width="34" height="34" aria-hidden="true">
               <path d="M12 21s-7.5-4.9-10-9.3C.4 8.6 2 5 5.5 5c2 0 3.4 1.1 4.5 2.6C11.1 6.1 12.5 5 14.5 5 18 5 19.6 8.6 22 11.7 19.5 16.1 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -226,29 +228,30 @@
           </button>
           <div class="gb__like-meta">
             <b id="likeCount">--</b>
-            <p id="likeHint">正在连接星链…</p>
+            <p id="likeHint">正在加载点赞数…</p>
           </div>
         </div>
-        <form class="gb__form spot tilt" id="commentForm">
+        <form class="gb__form" id="commentForm">
           <div class="gb__field">
+            <label for="gbName">你的昵称</label>
             <input type="text" id="gbName" maxlength="24" placeholder="你的昵称（24 字以内）" autocomplete="nickname" required />
           </div>
           <div class="gb__field">
+            <label for="gbText">留言内容</label>
             <textarea id="gbText" maxlength="500" rows="3" placeholder="说点什么吧，比如：哪个游戏最好玩？" required></textarea>
           </div>
           <div class="gb__form-foot">
             <span class="gb__counter" id="gbCounter">0 / 500</span>
-            <button class="btn btn--primary ripple" type="submit" id="gbSubmit">发射信号 ✦</button>
+            <button class="btn btn--primary ripple" type="submit" id="gbSubmit">发送留言</button>
           </div>
         </form>
       </div>
       <div class="gb__list-bar">
         <b id="gbTotal">信号加载中</b>
-        <span class="gb__live"><i></i>实时同步 · Netlify 云端持久化</span>
+        <span class="gb__live"><i></i>留言与点赞 · 自动同步</span>
       </div>
       <div class="gb__list" id="commentList" aria-live="polite"></div>
     </section>
-
   </main>
 
   <footer class="footer">
@@ -259,6 +262,7 @@
       <a href="https://ysloaner-game-empire.netlify.app/" target="_blank" rel="noopener">游戏帝国</a> ·
       <a href="https://ysloaner-technological.netlify.app/" target="_blank" rel="noopener">智启星际</a>
     </p>
+    <p class="footer__updated">最近更新 <time datetime="2026-10-04">2026.10.04</time> · 持续创造，持续迭代</p>
     <p class="footer__motto">做出东西，比谈论想法更有价值。</p>
   </footer>
 
@@ -279,6 +283,6 @@
   <!-- Toast 容器 -->
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
-  <script src="assets/js/main.js?v=4"></script>
+  <script src="assets/js/main.js?v=5"></script>
 </body>
 </html>

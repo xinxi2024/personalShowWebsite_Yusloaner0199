@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs><radialGradient id="glow"><stop stop-color="#244a65" stop-opacity=".55"/><stop offset="1" stop-color="#070b14" stop-opacity="0"/></radialGradient><linearGradient id="line"><stop stop-color="#67e8f9"/><stop offset="1" stop-color="#b7a6ff"/></linearGradient></defs>
+<rect width="1200" height="630" fill="#070b14"/><circle cx="960" cy="310" r="410" fill="url(#glow)"/>
+<g fill="none" stroke="#334a64"><circle cx="1000" cy="300" r="210"/><circle cx="1000" cy="300" r="150" stroke-dasharray="4 10"/><ellipse cx="1000" cy="300" rx="320" ry="110" transform="rotate(-35 1000 300)"/></g>
+<circle cx="930" cy="102" r="7" fill="#67e8f9"/><circle cx="1100" cy="410" r="5" fill="#b7a6ff"/>
+<text x="70" y="95" font-family="Arial,sans-serif" font-size="16" letter-spacing="4" fill="#a2aec4">SLOANER NEXUS / PERSONAL SPACE</text>
+<text x="66" y="256" font-family="PingFang SC,sans-serif" font-size="72" fill="#eef3fb" font-weight="500">俞顺利</text>
+<text x="66" y="355" font-family="Arial,sans-serif" font-size="96" fill="#eef3fb" font-weight="600" letter-spacing="-5">YuSloane<tspan fill="#67e8f9">.</tspan></text>
+<text x="70" y="422" font-family="PingFang SC,sans-serif" font-size="24" fill="#a2aec4">物联网工程在读 · 独立开发者</text>
+<path d="M70 474H700" stroke="#334155"/>
+<text x="70" y="530" font-family="PingFang SC,sans-serif" font-size="21" fill="#67e8f9">72 个作品 / 3 个系列 / 10 张荣誉证书</text>
+<text x="70" y="582" font-family="Arial,sans-serif" font-size="14" letter-spacing="2" fill="#a2aec4">SLOANERSHOW.NETLIFY.APP</text>
+</svg>
