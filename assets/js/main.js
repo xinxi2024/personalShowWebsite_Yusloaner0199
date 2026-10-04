@@ -1,5 +1,6 @@
-/* ============ Sloaner Nexus · v5 ============ */
-const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+/* ============ Sloaner Nexus · v5.1 ============ */
+const motionPreference = matchMedia("(prefers-reduced-motion: reduce)");
+let REDUCED = motionPreference.matches;
 const FINE_POINTER = matchMedia("(hover: hover) and (pointer: fine)").matches;
 let stormUntil = 0;
 
@@ -310,7 +311,7 @@ tick(0);
 let resizeT = null;
 addEventListener("resize", () => {
   clearTimeout(resizeT);
-  resizeT = setTimeout(resize, 150);
+  resizeT = setTimeout(() => { resize(); if (REDUCED) tick(0); }, 150);
 });
 // Hero 滚出视口时暂停星空渲染，省电省性能
 new IntersectionObserver(([e]) => {
@@ -324,6 +325,11 @@ function syncStarAnimation() {
   if (active && rafId === null) rafId = requestAnimationFrame(tick);
 }
 document.addEventListener("visibilitychange", syncStarAnimation);
+motionPreference.addEventListener("change", e => {
+  REDUCED = e.matches;
+  if (REDUCED) { stormUntil = 0; document.body.classList.remove("storm"); }
+  syncStarAnimation();
+});
 addEventListener("mousemove", e => {
   mouseX = e.clientX / innerWidth;
   mouseY = e.clientY / innerHeight;
@@ -542,7 +548,7 @@ lb.addEventListener("touchend", e => {
 
 /* ---------- 3D 倾斜（事件委托 + rAF 批处理，一帧最多算一次） ---------- */
 if (!REDUCED && FINE_POINTER) {
-  let tiltEl = null, tiltTarget = null, tiltQueued = false;
+  let tiltEl = null, tiltTarget = null, tiltEvent = null, tiltQueued = false;
   const resetTilt = el => {
     el.style.transform = "";
     el.style.transition = "";
@@ -551,14 +557,15 @@ if (!REDUCED && FINE_POINTER) {
   };
   const applyTilt = (e, el) => {
     const r = el.getBoundingClientRect();
-    const gx = (e.clientX - r.left) / r.width;
-    const gy = (e.clientY - r.top) / r.height;
+    const gx = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    const gy = Math.max(0, Math.min(1, (e.clientY - r.top) / r.height));
     el.style.setProperty("--gx", (gx * 100).toFixed(1) + "%");
     el.style.setProperty("--gy", (gy * 100).toFixed(1) + "%");
     el.style.transform = `perspective(900px) rotateX(${((.5 - gy) * 3).toFixed(2)}deg) rotateY(${((gx - .5) * 3).toFixed(2)}deg) translateY(-3px)`;
   };
   document.addEventListener("mousemove", e => {
-    tiltTarget = e.target;
+    if (REDUCED) { if (tiltEl) resetTilt(tiltEl); tiltEl = null; return; }
+    tiltTarget = e.target; tiltEvent = e;
     if (tiltQueued) return;
     tiltQueued = true;
     requestAnimationFrame(() => {
@@ -569,7 +576,7 @@ if (!REDUCED && FINE_POINTER) {
         tiltEl = el;
         if (el) el.style.transition = "transform .12s ease-out";
       }
-      if (el) applyTilt(e, el);
+      if (el) applyTilt(tiltEvent, el);
     });
   }, { passive: true });
   document.addEventListener("mouseout", e => {
@@ -580,7 +587,8 @@ if (!REDUCED && FINE_POINTER) {
 /* ---------- 涟漪点击反馈 ---------- */
 if (!REDUCED) {
   document.addEventListener("pointerdown", e => {
-    const t = e.target && e.target.closest && e.target.closest(".ripple");
+    if (REDUCED) return;
+    const t = e.target && e.target.closest && e.target.closest(".ripple,.btn,.filter__btn");
     if (!t) return;
     const r = t.getBoundingClientRect();
     const ink = document.createElement("span");

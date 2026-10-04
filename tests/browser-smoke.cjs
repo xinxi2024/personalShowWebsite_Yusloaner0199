@@ -133,7 +133,7 @@ const base = process.env.NEXUS_TEST_URL || 'http://127.0.0.1:4173';
    await page.screenshot({path:`/tmp/nexus-featured-${width}.png`});
    console.log(`PASS responsive ${width}px`);
  }
- assert.equal(await page.locator('.cursor-dot,.preloader').count(), 0);
+ assert.equal(await page.locator('.cursor-dot,.preloader,.nexus-cursor').count(), 0);
  assert.equal(await page.locator('.orbit').first().evaluate(e=>getComputedStyle(e).animationName), 'none');
  // Offline cache, retry recovery, and unavailable localStorage.
  fail = 'all';
@@ -153,13 +153,69 @@ const base = process.env.NEXUS_TEST_URL || 'http://127.0.0.1:4173';
  await context.close();
  // Motion-enabled desktop: scene pauses when hidden by scrolling out of view.
  const animated = await browser.newPage({viewport:{width:1440,height:1000}});
+ const effectErrors = [];
+ animated.on('pageerror', e => effectErrors.push(e.message));
+ await animated.addInitScript(() => {
+   const original = requestAnimationFrame;
+   window.__effectFrames = 0;
+   window.requestAnimationFrame = fn => { window.__effectFrames++; return original(fn); };
+ });
  await animated.goto(base,{waitUntil:'domcontentloaded'});
  await animated.evaluate(()=>scrollTo({top:document.getElementById('about').offsetTop,behavior:'instant'}));
  await animated.waitForTimeout(300);
  assert.equal(await animated.locator('#top').evaluate(e=>e.classList.contains('motion-paused')),true);
  await animated.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
  await animated.waitForTimeout(300);
- await animated.screenshot({path:'/tmp/nexus-desktop-animated.png'});
+ await animated.mouse.move(700,350);
+ await animated.mouse.move(970,430,{steps:20});
+ await animated.waitForTimeout(100);
+ assert.equal(await animated.locator('body').evaluate(e=>e.classList.contains('nexus-cursor-ready')),true);
+ assert.equal(await animated.locator('.nexus-cursor').count(),1);
+ assert.ok(await animated.locator('#top').evaluate(e=>e.style.getPropertyValue('--scene-x').length>0));
+ await animated.screenshot({path:'/tmp/nexus-desktop-effects.png'});
+ await animated.locator('.hero__btns a[target="_blank"]').hover();
+ assert.equal(await animated.locator('.nexus-cursor-ring').evaluate(e=>e.classList.contains('is-outbound')),true);
+ assert.ok(await animated.locator('.hero__btns a[target="_blank"]').evaluate(e=>Boolean(e.style.translate)));
+ await animated.mouse.down();
+ await animated.waitForTimeout(40);
+ assert.equal(await animated.locator('.nexus-cursor').evaluate(e=>e.classList.contains('is-pressed')),true);
+ await animated.mouse.move(700,350);
+ await animated.mouse.up();
+ // Keyboard restores the native cursor and removes button offsets.
+ await animated.keyboard.press('Tab');
+ assert.equal(await animated.locator('body').evaluate(e=>e.classList.contains('nexus-cursor-ready')),false);
+ await animated.locator('#searchInput').hover();
+ assert.equal(await animated.locator('body').evaluate(e=>e.classList.contains('nexus-cursor-ready')),false);
+ // Put the scene fully offscreen and ensure the cursor's RAF loop settles too.
+ await animated.evaluate(()=>scrollTo({top:document.getElementById('about').offsetTop,behavior:'instant'}));
+ await animated.mouse.move(700,250);
+ await animated.mouse.move(750,280,{steps:12});
+ await animated.waitForTimeout(1200);
+ assert.equal(await animated.locator('.nexus-cursor').getAttribute('data-settled'),'true');
+ const idleFrames = await animated.evaluate(()=>window.__effectFrames);
+ await animated.waitForTimeout(250);
+ assert.equal(await animated.evaluate(()=>window.__effectFrames),idleFrames);
+ // Repeated live preference changes must remove listeners/layers and restore a single cursor.
+ for(let i=0;i<2;i++) {
+   await animated.emulateMedia({reducedMotion:'reduce'});
+   await animated.waitForTimeout(100);
+   assert.equal(await animated.locator('.nexus-cursor').count(),0);
+   assert.equal(await animated.locator('body').evaluate(e=>e.classList.contains('nexus-cursor-ready')),false);
+   assert.equal(await animated.locator('.constellation-reveal').first().evaluate(e=>getComputedStyle(e).opacity),'1');
+   await animated.emulateMedia({reducedMotion:'no-preference'});
+   await animated.waitForTimeout(100);
+   assert.equal(await animated.locator('.nexus-cursor').count(),1);
+ }
+ await animated.mouse.move(770,300);
+ assert.equal(await animated.locator('body').evaluate(e=>e.classList.contains('nexus-cursor-ready')),true);
+ await animated.evaluate(()=>dispatchEvent(new Event('blur')));
+ assert.equal(await animated.locator('body').evaluate(e=>e.classList.contains('nexus-cursor-ready')),false);
+ assert.deepEqual(effectErrors,[]);
+ const mobile = await browser.newPage({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
+ await mobile.goto(base,{waitUntil:'domcontentloaded'});
+ assert.equal(await mobile.locator('.nexus-cursor').count(),0);
+ assert.ok(await mobile.evaluate(()=>document.documentElement.scrollWidth <= innerWidth));
+ await mobile.close();
  const fallback = await browser.newPage({reducedMotion:'reduce'});
  await fallback.route('**/assets/projects/data.webp',r=>r.abort());
  await fallback.goto(base,{waitUntil:'domcontentloaded'});
@@ -167,5 +223,5 @@ const base = process.env.NEXUS_TEST_URL || 'http://127.0.0.1:4173';
  await fallback.waitForFunction(()=>document.querySelector('.cover-2 img').hidden);
  assert.ok(await fallback.locator('.cover-2 .cover-fallback').innerText().then(t=>t.includes('智绘大数据')));
  await browser.close();
- console.log('PASS catalog, independent filters, cases, timeline, lightbox keyboard, guestbook success/rollback/retry/storage failure, stale read protection, image fallback, reduced motion and offscreen pause');
+ console.log('PASS catalog, independent filters, cases, timeline, lightbox keyboard, guestbook success/rollback/retry/storage failure, stale read protection, image fallback, reduced motion, offscreen pause, cursor hover/burst/idle/input/live preferences/touch fallback');
 })().catch(e => { console.error(e); process.exit(1); });
